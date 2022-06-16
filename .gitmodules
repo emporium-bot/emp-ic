@@ -1,0 +1,6 @@
+[submodule "dip20"]
+	path = dip20
+	url = https://github.com/Psychedelic/dip20
+[submodule "dip721"]
+	path = dip721
+	url = https://github.com/Psychedelic/dip721
