@@ -1,5 +1,4 @@
 use ic_kit::candid::{CandidType, Deserialize, Int, Nat, Principal};
-use std::collections::HashMap;
 
 // BEGIN DIP721v2 //
 
@@ -40,14 +39,6 @@ pub struct TokenMetadata {
     pub burned_by: Option<Principal>,
 }
 
-#[derive(CandidType, Debug, Deserialize)]
-pub enum ApiError {
-    Unauthorized,
-    InvalidTokenId,
-    ZeroAddress,
-    Other,
-}
-
 #[derive(CandidType, Deserialize, Debug)]
 pub enum NftError {
     UnauthorizedOwner,
@@ -62,61 +53,7 @@ pub enum NftError {
     Other(String),
 }
 
-pub type TxReceiptDIP721v2 = Result<Nat, ApiError>;
-pub type OwnerResult = Result<Principal, NftError>;
-
 // END DIP721v2 //
-
-#[derive(CandidType, Clone, Deserialize)]
-pub struct BalanceMetadata {
-    pub owner: Principal,
-    pub contractId: Principal,
-    pub standard: String,
-    pub token_type: String,
-    pub details: HashMap<String, GenericValue>,
-}
-
-// END ServiceBalance //
-
-// BEGIN EXT //
-
-pub type AccountIdentifier = String;
-pub type TokenIdentifier = u64;
-pub type Balance = Nat;
-pub type Blob = Vec<u8>;
-pub type Memo = Blob;
-pub type SubAccount = Vec<u8>;
-
-#[derive(CandidType, Debug, Deserialize, PartialEq)]
-pub enum User {
-    address(AccountIdentifier),
-    principal(Principal),
-}
-
-#[derive(CandidType, Debug, Deserialize, PartialEq)]
-pub struct TransferRequest {
-    pub from: User,
-    pub to: User,
-    pub token: TokenIdentifier,
-    pub amount: Balance,
-    pub memo: Memo,
-    pub notify: bool,
-    pub subaccount: Option<SubAccount>,
-}
-
-#[derive(CandidType, Debug, Deserialize, PartialEq)]
-pub enum TransferResponseErrors {
-    Unauthorized(AccountIdentifier),
-    InsufficientBalance,
-    Rejected,
-    InvalidToken(TokenIdentifier),
-    CannotNotify(AccountIdentifier),
-    Other(String),
-}
-
-pub type TransferResponse = Result<Balance, TransferResponseErrors>;
-
-// END EXT //
 
 // BEGIN DIP20 //
 
