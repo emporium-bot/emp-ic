@@ -12,7 +12,6 @@ use ic_kit::{
 
 mod ledger;
 mod token_proxy;
-mod vendor_types;
 
 #[derive(Clone, Deserialize, CandidType)]
 pub struct InitArgs {
