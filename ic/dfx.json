@@ -1,0 +1,10 @@
+{
+  "dfx": "0.9.3",
+  "canisters": {
+    "emporium": {
+      "package": "emporium",
+      "candid": "emporium/emporium.did",
+      "type": "rust"
+    }
+  }
+}

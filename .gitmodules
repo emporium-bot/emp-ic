@@ -4,3 +4,9 @@
 [submodule "dip721"]
 	path = ic/dip721
 	url = https://github.com/Psychedelic/dip721
+[submodule "ic/dip721"]
+	path = ic/dip721
+	url = https://github.com/Psychedelic/dip721
+[submodule "ic/dip20"]
+	path = ic/dip20
+	url = https://github.com/Psychedelic/dip20

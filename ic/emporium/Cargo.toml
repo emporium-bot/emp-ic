@@ -1,0 +1,23 @@
+[package]
+name = "emporium"
+version = "0.1.0"
+authors = ["Ossian Mapes <self@ossian.dev>"]
+edition = "2018"
+
+[dependencies]
+ic-cdk-macros = "0.5"
+candid = "0.7.4"
+serde = "1.0"
+serde_cbor = "0.11.2"
+serde_bytes = "0.11.5"
+ic-kit = "0.4.4"
+ic-cdk = "0.5.1"
+assert-panic = "1.0.1"
+derive_builder = "0.10.2"
+derive-new = "0.5"
+num-bigint = "0.4.3"
+compile-time-run = "0.2.12"
+cap-sdk = { git = "https://github.com/Psychedelic/cap.git", branch = "main" }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+async-std = { version="1.10.0", features = ["attributes"] }
