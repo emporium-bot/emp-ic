@@ -27,3 +27,5 @@ Discord daily coin bot that uses fungible and non fungible tokens on the IC
 - this triggers a nft mint via dip721v2 canister
 
 ## Flow
+
+![flowchart](https://user-images.githubusercontent.com/8976745/173971159-3f5bcb99-d714-4326-b8b0-69794daacebc.png)
