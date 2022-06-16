@@ -2,6 +2,10 @@
 members = [
     "emporium"
 ]
+exclude = [
+    "dip20",
+    "dip721",
+]
 
 [profile.release]
 lto = true
