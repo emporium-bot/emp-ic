@@ -1,0 +1,17 @@
+type CanisterHttpResponsePayload = record {
+  status : nat64;
+  body : vec nat8;
+  headers : vec HttpHeader;
+};
+type HttpHeader = record { value : text; name : text };
+type Result = variant { Ok; Err : text };
+service : {
+  daily : (text) -> (Result);
+  dfxInfo : () -> (text) query;
+  gitCommitHash : () -> (text) query;
+  rustToolchainInfo : () -> (text) query;
+  sanitize_response : (CanisterHttpResponsePayload) -> (
+      CanisterHttpResponsePayload,
+    ) query;
+  test_get : () -> (text);
+}

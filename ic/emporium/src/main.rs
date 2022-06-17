@@ -10,8 +10,11 @@ use ic_kit::{
   Principal,
 };
 
+mod http;
 mod ledger;
 mod token_proxy;
+
+use crate::http::*;
 
 #[derive(Clone, Deserialize, CandidType)]
 pub struct InitArgs {
@@ -21,11 +24,20 @@ pub struct InitArgs {
 
 #[init]
 fn init(args: Option<InitArgs>) {
-  let args = args.unwrap();
-  ledger::with_mut(|ledger| {
-    ledger.ft_canister = Some(args.ft_canister);
-    ledger.nft_canister = Some(args.nft_canister);
-  });
+  // let args = args.unwrap();
+  // ledger::with_mut(|ledger| {
+  //   ledger.ft_canister = Some(args.ft_canister);
+  //   ledger.nft_canister = Some(args.nft_canister);
+  // });
+}
+
+#[update]
+#[candid_method]
+async fn test_get() -> String {
+  format!(
+    "{:?}",
+    http::get("https://rickandmortyapi.com/api/character/1".to_string()).await
+  )
 }
 
 /// Register daily submission for user, requires registration
@@ -37,6 +49,7 @@ fn daily(discord_user: String) -> Result<(), String> {
       .users
       .get_mut(&discord_user)
       .ok_or("Unregistered user")?;
+
     let now = ic::time();
 
     // Check if the user has already submitted within 18 hours
@@ -58,6 +71,8 @@ fn daily(discord_user: String) -> Result<(), String> {
     // user gets exponentially increasing amounts the longer the streak
     // TODO: Define a more gradual increase
     user.coins += user.daily.streak.pow(2);
+
+    // TODO: initiate transfer OR mint for user
 
     Ok(())
   })
