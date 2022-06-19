@@ -6,6 +6,10 @@ Discord daily coin bot that uses fungible and non fungible tokens on the IC
 
 ## Commands
 
+### `register <principal id>`
+
+- user registers their principal id for their discord name
+
 ### `daily`
 
 - users can build a streak
@@ -29,3 +33,23 @@ Discord daily coin bot that uses fungible and non fungible tokens on the IC
 ## Flow
 
 ![flowchart](https://user-images.githubusercontent.com/8976745/173971159-3f5bcb99-d714-4326-b8b0-69794daacebc.png)
+
+- bot receives command, calls respective method on emporium
+
+### Canisters:
+
+#### Emporium
+
+- Main canister.
+- Implements dip20 interface and holds token state
+- holds user data state and grants rewards to local token state
+-
+
+#### Rewards
+
+- Dip721 canister
+
+Options:
+
+- shop purchases are minted to users
+- shop items are minted before hand under the emporium canister id, and transferred to users
