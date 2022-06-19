@@ -1,17 +1,72 @@
-type CanisterHttpResponsePayload = record {
-  status : nat64;
-  body : vec nat8;
-  headers : vec HttpHeader;
+type Metadata = record {
+  fee : nat;
+  decimals : nat8;
+  owner : principal;
+  logo : text;
+  name : text;
+  totalSupply : nat;
+  symbol : text;
 };
-type HttpHeader = record { value : text; name : text };
-type Result = variant { Ok; Err : text };
+type Result = variant { Ok : nat; Err : TxError };
+type Result_1 = variant { Ok : text; Err : text };
+type Result_2 = variant { Ok; Err : text };
+type StreakData = record { streak : nat64; last_timestamp : nat64 };
+type TokenInfo = record {
+  holderNumber : nat64;
+  deployTime : nat64;
+  metadata : Metadata;
+  historySize : nat64;
+  cycles : nat64;
+  feeTo : principal;
+};
+type TxError = variant {
+  InsufficientAllowance;
+  InsufficientBalance;
+  ErrorOperationStyle;
+  Unauthorized;
+  LedgerTrap;
+  ErrorTo;
+  Other : text;
+  BlockUsed;
+  AmountTooSmall;
+};
+type User = record {
+  "principal" : principal;
+  coins : nat64;
+  work : StreakData;
+  discord_id : text;
+  daily : StreakData;
+};
 service : {
-  daily : (text) -> (Result);
+  allowance : (principal, principal) -> (nat) query;
+  approve : (principal, nat) -> (Result);
+  balanceOf : (principal) -> (nat) query;
+  daily : (text) -> (Result_1);
+  decimals : () -> (nat8) query;
   dfxInfo : () -> (text) query;
+  getAllowanceSize : () -> (nat64) query;
+  getHolders : (nat64, nat64) -> (vec record { principal; nat }) query;
+  getMetadata : () -> (Metadata) query;
+  getTokenInfo : () -> (TokenInfo) query;
+  getUserApprovals : (principal) -> (vec record { principal; nat }) query;
+  get_user : (text) -> (opt User);
+  get_users : () -> (vec User);
   gitCommitHash : () -> (text) query;
+  historySize : () -> (nat64) query;
+  logo : () -> (text) query;
+  mint : (principal, nat) -> (Result);
+  name : () -> (text) query;
+  owner : () -> (principal) query;
+  register : (text) -> (Result_2);
   rustToolchainInfo : () -> (text) query;
-  sanitize_response : (CanisterHttpResponsePayload) -> (
-      CanisterHttpResponsePayload,
-    ) query;
-  test_get : () -> (text);
+  setFee : (nat) -> ();
+  setFeeTo : (principal) -> ();
+  setLogo : (text) -> ();
+  setName : (text) -> ();
+  setOwner : (principal) -> ();
+  set_principal : (text, principal) -> (Result_2);
+  symbol : () -> (text) query;
+  totalSupply : () -> (nat) query;
+  transfer : (principal, nat) -> (Result);
+  transferFrom : (principal, principal, nat) -> (Result);
 }
