@@ -1,6 +1,6 @@
 use ic_kit::{
     candid::{CandidType, Deserialize},
-    Principal,
+    ic, Principal,
 };
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -35,6 +35,24 @@ thread_local! {
     nft_canister: None,
     users: HashMap::new(),
   });
+  static CUSTODIANS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
+}
+
+// TODO: use controllers for ownership
+// this will require the canister to be a controller of itself (like dip721)
+pub fn _is_auth() -> Result<(), String> {
+    CUSTODIANS.with(|c| {
+        let custodians = c.borrow();
+        if custodians.contains(&ic::caller()) {
+            Ok(())
+        } else {
+            Err("Error: Unauthorized principal ID".to_string())
+        }
+    })
+}
+
+pub fn custodians_mut<T, F: FnOnce(&mut Vec<Principal>) -> T>(f: F) -> T {
+    CUSTODIANS.with(|custodians| f(&mut custodians.borrow_mut()))
 }
 
 pub fn with<T, F: FnOnce(&Ledger) -> T>(f: F) -> T {

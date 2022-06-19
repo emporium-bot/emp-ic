@@ -1,3 +1,4 @@
+use crate::ledger::*;
 /**
 * Module     : main.rs
 * Copyright  : 2022 Fleek
@@ -32,6 +33,18 @@ pub struct Metadata {
   fee: Nat,
 }
 
+#[allow(non_snake_case)]
+#[derive(Deserialize, CandidType, Clone, Debug)]
+pub struct TokenInfo {
+  metadata: Metadata,
+  feeTo: Principal,
+  // status info
+  historySize: usize,
+  deployTime: u64,
+  holderNumber: usize,
+  cycles: u64,
+}
+
 #[derive(Deserialize, CandidType, Clone, Debug)]
 pub struct StatsData {
   logo: String,
@@ -44,18 +57,6 @@ pub struct StatsData {
   fee_to: Principal,
   history_size: usize,
   deploy_time: u64,
-}
-
-#[allow(non_snake_case)]
-#[derive(Deserialize, CandidType, Clone, Debug)]
-pub struct TokenInfo {
-  metadata: Metadata,
-  feeTo: Principal,
-  // status info
-  historySize: usize,
-  deployTime: u64,
-  holderNumber: usize,
-  cycles: u64,
 }
 
 impl Default for StatsData {
@@ -506,19 +507,6 @@ fn set_owner(owner: Principal) {
 }
 
 /* INTERNAL FNS */
-
-// TODO: use controllers for ownership
-// this will require the canister to be a controller of itself (like dip721)
-fn _is_auth() -> Result<(), String> {
-  STATS.with(|s| {
-    let stats = s.borrow();
-    if ic::caller() == stats.owner {
-      Ok(())
-    } else {
-      Err("Error: Unauthorized principal ID".to_string())
-    }
-  })
-}
 
 fn _balance_ins(from: Principal, value: Nat) {
   BALANCES.with(|b| {

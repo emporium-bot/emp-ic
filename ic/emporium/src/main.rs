@@ -144,17 +144,26 @@ fn set_principal(discord_user: String, principal: Principal) -> Result<(), Strin
 pub struct InitArgs {
   pub cap_canister: Option<Principal>,
   pub nft_canister: Option<Principal>,
+  pub custodians: Option<Vec<Principal>>,
 }
 
 #[init]
 #[candid_method(init)]
 fn init(args: Option<InitArgs>) {
-  ic::print(format!("{:?}", args));
   let args = args.unwrap();
   ledger::with_mut(|ledger| {
     ledger.nft_canister = args.nft_canister;
     handshake(1_000_000_000_000, args.cap_canister);
   });
+
+  ledger::custodians_mut(|custodians| match args.custodians {
+    Some(c) => {
+      custodians.extend(c);
+    }
+    None => {
+      custodians.push(ic::caller());
+    }
+  })
 }
 
 #[pre_upgrade]
