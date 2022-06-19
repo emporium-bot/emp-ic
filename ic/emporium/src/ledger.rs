@@ -3,16 +3,10 @@ use ic_kit::{
     Principal,
 };
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Deserialize, CandidType)]
-pub struct DailyData {
-    pub last_timestamp: u64,
-    pub streak: u64,
-}
-
-#[derive(Clone, Deserialize, CandidType)]
-pub struct WorkData {
+pub struct StreakData {
     pub last_timestamp: u64,
     pub streak: u64,
 }
@@ -21,8 +15,8 @@ pub struct WorkData {
 pub struct User {
     pub discord_id: String,
     pub principal: Principal,
-    pub daily: DailyData,
-    pub work: WorkData,
+    pub daily: StreakData,
+    pub work: StreakData,
     pub coins: u64,
 }
 
@@ -43,7 +37,7 @@ thread_local! {
   });
 }
 
-pub fn _with<T, F: FnOnce(&Ledger) -> T>(f: F) -> T {
+pub fn with<T, F: FnOnce(&Ledger) -> T>(f: F) -> T {
     LEDGER.with(|ledger| f(&ledger.borrow()))
 }
 
