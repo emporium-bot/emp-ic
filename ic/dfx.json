@@ -5,6 +5,11 @@
       "package": "emporium",
       "candid": "emporium/emporium.did",
       "type": "rust"
+    },
+    "rewards": {
+      "build": "",
+      "wasm": "wasm/dip721.wasm",
+      "type": "custom"
     }
   }
 }
