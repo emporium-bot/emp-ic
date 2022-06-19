@@ -192,30 +192,6 @@ fn post_upgrade() {
   });
 }
 
-/// Check if a given principal is included in the current canister controller list
-///
-/// To let the canister call the `aaaaa-aa` Management API `canister_status`,
-/// the canister needs to be a controller of itself.
-async fn _is_controller() -> Result<(), String> {
-  let caller = ic::caller();
-  let self_id = ic::id();
-
-  let status = CanisterStatus::perform(
-    Principal::management_canister(),
-    (WithCanisterId {
-      canister_id: ic::id(),
-    },),
-  )
-  .await
-  .map(|(status,)| Ok(status))
-  .unwrap_or_else(|(code, message)| Err(format!("Code: {:?}, Message: {}", code, message)))?;
-
-  match status.settings.controllers.contains(&caller) {
-    true => Ok(()),
-    false => Err(format!("{} is not a controller of {}", caller, self_id)),
-  }
-}
-
 #[query(name = "gitCommitHash")]
 #[candid_method(query, rename = "gitCommitHash")]
 fn git_commit_hash() -> &'static str {
