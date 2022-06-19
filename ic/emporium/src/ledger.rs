@@ -3,7 +3,7 @@ use ic_kit::{
     Principal,
 };
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Clone, Deserialize, CandidType)]
 pub struct StreakData {
