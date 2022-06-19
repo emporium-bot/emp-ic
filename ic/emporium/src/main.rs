@@ -1,4 +1,5 @@
 use crate::dip20::*;
+use cap_sdk::handshake;
 use compile_time_run::run_command_str;
 use ic_kit::{
   candid::{candid_method, CandidType, Deserialize, Nat},
@@ -139,18 +140,20 @@ fn set_principal(discord_user: String, principal: Principal) -> Result<(), Strin
 
 // BEGIN CANISTER SETUP //
 
-#[derive(Clone, Deserialize, CandidType)]
+#[derive(Clone, Deserialize, Debug, CandidType)]
 pub struct InitArgs {
-  pub ft_canister: Principal,
-  pub nft_canister: Principal,
+  pub cap_canister: Option<Principal>,
+  pub nft_canister: Option<Principal>,
 }
 
 #[init]
+#[candid_method(init)]
 fn init(args: Option<InitArgs>) {
+  ic::print(format!("{:?}", args));
   let args = args.unwrap();
   ledger::with_mut(|ledger| {
-    ledger.ft_canister = Some(args.ft_canister);
-    ledger.nft_canister = Some(args.nft_canister);
+    ledger.nft_canister = args.nft_canister;
+    handshake(1_000_000_000_000, args.cap_canister);
   });
 }
 

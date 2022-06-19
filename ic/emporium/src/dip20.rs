@@ -6,7 +6,7 @@
 * Stability  : Experimental
 */
 use candid::{candid_method, CandidType, Deserialize, Nat};
-use cap_sdk::{handshake, insert, DetailValue, IndefiniteEvent};
+use cap_sdk::{insert, DetailValue, IndefiniteEvent};
 use ic_cdk_macros::*;
 use ic_kit::{ic, Principal};
 use std::cell::RefCell;

@@ -1,3 +1,7 @@
+type InitArgs = record {
+  cap_canister : opt principal;
+  nft_canister : opt principal;
+};
 type Metadata = record {
   fee : nat;
   decimals : nat8;
@@ -37,7 +41,7 @@ type User = record {
   discord_id : text;
   daily : StreakData;
 };
-service : {
+service : (opt InitArgs) -> {
   allowance : (principal, principal) -> (nat) query;
   approve : (principal, nat) -> (Result);
   balanceOf : (principal) -> (nat) query;
