@@ -47,16 +47,16 @@ pub struct TokenInfo {
 
 #[derive(Deserialize, CandidType, Clone, Debug)]
 pub struct StatsData {
-  logo: String,
-  name: String,
-  symbol: String,
-  decimals: u8,
-  total_supply: Nat,
-  owner: Principal,
-  fee: Nat,
-  fee_to: Principal,
-  history_size: usize,
-  deploy_time: u64,
+  pub logo: String,
+  pub name: String,
+  pub symbol: String,
+  pub decimals: u8,
+  pub total_supply: Nat,
+  pub owner: Principal,
+  pub fee: Nat,
+  pub fee_to: Principal,
+  pub history_size: usize,
+  pub deploy_time: u64,
 }
 
 impl Default for StatsData {
@@ -499,21 +499,21 @@ fn set_fee_to(fee_to: Principal) {
 
 /* INTERNAL FNS */
 
-fn _balance_ins(from: Principal, value: Nat) {
+pub fn _balance_ins(from: Principal, value: Nat) {
   BALANCES.with(|b| {
     let mut balances = b.borrow_mut();
     balances.insert(from, value);
   });
 }
 
-fn _balance_rem(from: Principal) {
+pub fn _balance_rem(from: Principal) {
   BALANCES.with(|b| {
     let mut balances = b.borrow_mut();
     balances.remove(&from);
   });
 }
 
-fn _transfer(from: Principal, to: Principal, value: Nat) {
+pub fn _transfer(from: Principal, to: Principal, value: Nat) {
   let from_balance = balance_of(from);
   let from_balance_new = from_balance - value.clone();
 
@@ -530,7 +530,7 @@ fn _transfer(from: Principal, to: Principal, value: Nat) {
   }
 }
 
-fn _charge_fee(user: Principal, fee: Nat) {
+pub fn _charge_fee(user: Principal, fee: Nat) {
   STATS.with(|s| {
     let stats = s.borrow();
     if stats.fee > Nat::from(0) {
@@ -539,28 +539,28 @@ fn _charge_fee(user: Principal, fee: Nat) {
   });
 }
 
-fn _get_fee() -> Nat {
+pub fn _get_fee() -> Nat {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.fee.clone()
   })
 }
 
-fn _get_owner() -> Principal {
+pub fn _get_owner() -> Principal {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.owner
   })
 }
 
-fn _history_inc() {
+pub fn _history_inc() {
   STATS.with(|s| {
     let mut stats = s.borrow_mut();
     stats.history_size += 1;
   })
 }
 
-async fn add_record(
+pub async fn add_record(
   caller: Principal,
   op: &str,
   from: Principal,

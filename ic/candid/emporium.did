@@ -62,7 +62,7 @@ service : (opt InitArgs) -> {
   mint : (principal, nat) -> (Result);
   name : () -> (text) query;
   owner : () -> (principal) query;
-  register : (text) -> (Result_2);
+  register : (text) -> (Result_1);
   rustToolchainInfo : () -> (text) query;
   setFee : (nat) -> ();
   setFeeTo : (principal) -> ();

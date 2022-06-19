@@ -19,7 +19,7 @@ build: candid start-replica
 	dfx build emporium
 
 local: candid start-replica cap-local
-	dfx deploy emporium --argument '(opt record{custodians=opt vec{principal"$(LOCAL_CUSTODIAN_PRINCIPAL)"}; nft_canister=null; cap=opt principal"$(CAP_ID)"})'
+	dfx deploy emporium --argument '(opt record{nft_canister=null; cap_canister=opt principal"$(CAP_ID)"})'
 
 start-replica:
 	dfx ping local || dfx start --clean --background

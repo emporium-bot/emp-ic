@@ -10,16 +10,32 @@ Discord daily bot that uses fungible tokens for coins and non fungible tokens fo
 
 - user registers their principal id for their discord name
 
+```sh
+$ dfx canister call emporium register "ossian.icp#7421"
+```
+
 ### `daily`
 
+- anyone can call
+- registration required
 - users can build a streak
 - can call this method once per 18 hrs
 
+```sh
+$ dfx canister call emporium daily "ossian.icp#7421"
+```
+
 ### `work`
 
+- anyone can call
+- registration required
 - users can work every 1 hr
-- the closer to hr between calls can net more tokens
-- need to define a curve for that
+- streak modifies reward exponentially
+- TODO: the closer to hr between calls can net more tokens
+
+```sh
+$ dfx canister call emporium work "ossian.icp#7421"
+```
 
 ### `shop`
 

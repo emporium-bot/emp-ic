@@ -609,6 +609,7 @@ dependencies = [
  "ic-cdk-macros 0.5.1",
  "ic-kit",
  "num-bigint",
+ "regex",
  "serde",
  "serde_bytes",
  "serde_cbor",

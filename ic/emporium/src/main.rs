@@ -1,4 +1,5 @@
 use crate::dip20::*;
+use cap_sdk::{archive, from_archive, Archive};
 use compile_time_run::run_command_str;
 use ic_kit::{
   candid::{candid_method, CandidType, Deserialize, Nat},
@@ -6,6 +7,7 @@ use ic_kit::{
   macros::*,
   Principal,
 };
+use regex::Regex;
 
 // mod http;
 mod dip20;
@@ -47,8 +49,8 @@ fn get_users() -> Vec<ledger::User> {
 /// with the streak running out after 28 hrs.
 #[update]
 #[candid_method]
-fn daily(discord_user: String) -> Result<String, String> {
-  ledger::with_mut(|data| {
+async fn daily(discord_user: String) -> Result<String, String> {
+  let res = ledger::with_mut(|data| {
     let mut user = data
       .users
       .get_mut(&discord_user)
@@ -71,14 +73,18 @@ fn daily(discord_user: String) -> Result<String, String> {
     }
     user.daily.last_timestamp = now;
 
-    // Update the user's coins
     // user gets exponentially increasing amounts the longer the streak
     // TODO: Define a more gradual increase, and taper off at a price
-    let amount = user.daily.streak.pow(2);
-    dip20::mint(user.principal, Nat::from(amount));
+    Ok((user.principal, Nat::from(100 + user.daily.streak.pow(2))))
+  });
 
-    Ok("Daily submission successful".to_string())
-  })
+  match res {
+    Ok((principal, amount)) => {
+      dip20::mint(principal, amount.clone()).await;
+      Ok(format!("@{}, daily rewards: {}", discord_user, amount))
+    }
+    Err(e) => Err(e),
+  }
 }
 
 /// Register work submission for user, requires registration
@@ -86,8 +92,8 @@ fn daily(discord_user: String) -> Result<String, String> {
 /// Users can only submit once every hour, with the streak running out after 2 hours
 #[update]
 #[candid_method]
-fn work(discord_user: String) -> Result<String, String> {
-  ledger::with_mut(|data| {
+async fn work(discord_user: String) -> Result<String, String> {
+  let res = ledger::with_mut(|data| {
     let mut user = data
       .users
       .get_mut(&discord_user)
@@ -102,26 +108,38 @@ fn work(discord_user: String) -> Result<String, String> {
 
     // update the user's work streak
     // reset streak if last was over 2 hrs
-    if (now - user.work.last_timestamp > 2 * ONE_HOUR) || user.work.last_timestamp == 0 {
+    if now - user.work.last_timestamp > 2 * ONE_HOUR {
       user.work.streak = 0;
     } else {
       user.work.streak += 1;
     }
 
-    // TODO: reward coins for work streak
+    // reward user coins for their work and streak bonus
     // user gets exponentially increasing amounts the longer the streak
+    Ok((user.principal, Nat::from(100 + user.work.streak.pow(2))))
+  });
 
-    // update the user's coins
-    // user gets exponentially increasing amounts the longer the streak
-    Ok("Work submission successful".to_string())
-  })
+  match res {
+    Ok((principal, amount)) => {
+      dip20::mint(principal, amount.clone()).await;
+      Ok(format!("@{}, work rewards: {}", discord_user, amount))
+    }
+    Err(e) => Err(e),
+  }
 }
 
 /// Register a new user
 #[update]
 #[candid_method]
-fn register(discord_user: String) -> Result<(), String> {
+fn register(discord_user: String) -> Result<String, String> {
+  // regex check for valid discord username
+  let re = Regex::new(r"^(.{3,32})#(\d{4})$").unwrap();
+  if !re.is_match(&discord_user) {
+    return Err("Invalid discord username".to_string());
+  }
+
   ledger::with_mut(|data| {
+    let caller = ic::caller();
     if data.users.contains_key(&discord_user.clone()) {
       return Err("User already registered".to_string());
     }
@@ -130,7 +148,7 @@ fn register(discord_user: String) -> Result<(), String> {
       discord_user.clone(),
       ledger::User {
         discord_id: discord_user.clone(),
-        principal: ic::caller(),
+        principal: caller,
         daily: ledger::StreakData {
           last_timestamp: 0,
           streak: 0,
@@ -144,7 +162,10 @@ fn register(discord_user: String) -> Result<(), String> {
     );
     data.total_users += 1;
 
-    Ok(())
+    Ok(format!(
+      "@{}, registered principal id: `{:}`",
+      discord_user, caller
+    ))
   })
 }
 
@@ -156,11 +177,11 @@ fn set_principal(discord_user: String, principal: Principal) -> Result<(), Strin
     let mut user = data
       .users
       .get_mut(&discord_user)
-      .ok_or("Unregistered user")?;
+      .ok_or("User not registered")?;
 
     // Check if the user is the caller
     if user.principal != ic::caller() {
-      return Err("Not authorized".to_string());
+      return Err("Not authorized to change this principal".to_string());
     }
 
     user.principal = principal;
@@ -201,21 +222,31 @@ fn init(args: Option<InitArgs>) {
 
 #[pre_upgrade]
 fn pre_upgrade() {
+  let ledger = ledger::with(|ledger| ledger.clone());
+  let custodians = ledger::custodians_mut(|custodians| custodians.clone());
   let stats = STATS.with(|s| s.borrow().clone());
   let balances = BALANCES.with(|b| b.borrow().clone());
   let allows = ALLOWS.with(|a| a.borrow().clone());
   let tx_log = TXLOG.with(|t| t.borrow().clone());
-  ic::stable_store((stats, balances, allows, tx_log)).unwrap();
+  ic::stable_store((ledger, custodians, stats, balances, allows, tx_log)).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  let (metadata_stored, balances_stored, allowances_stored, tx_log_stored): (
+  let (ledger, custodians, metadata_stored, balances_stored, allowances_stored, tx_log_stored): (
+    ledger::Ledger,
+    Vec<Principal>,
     StatsData,
     Balances,
     Allowances,
     TxLog,
   ) = ic::stable_restore().unwrap();
+  ledger::with_mut(|ledger| {
+    *ledger = ledger.clone();
+  });
+  ledger::custodians_mut(|custodians| {
+    *custodians = custodians.clone();
+  });
   STATS.with(|s| {
     let mut stats = s.borrow_mut();
     *stats = metadata_stored;
