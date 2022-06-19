@@ -8,7 +8,14 @@
     },
     "rewards": {
       "build": "",
+      "candid": "candid/dip721.did",
       "wasm": "wasm/dip721.wasm",
+      "type": "custom"
+    },
+    "cap-router": {
+      "build": "",
+      "candid": "candid/cap-router.did",
+      "wasm": "wasm/cap-router.wasm",
       "type": "custom"
     }
   }
