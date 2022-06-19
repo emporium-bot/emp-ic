@@ -12,7 +12,7 @@ init:
 	cargo check
 
 candid:
-	cargo run > emporium/emporium.did
+	cargo run > candid/emporium.did
 
 build: candid start-replica
 	dfx canister create emporium

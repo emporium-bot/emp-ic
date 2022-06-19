@@ -3,7 +3,7 @@
   "canisters": {
     "emporium": {
       "package": "emporium",
-      "candid": "emporium/emporium.did",
+      "candid": "candid/emporium.did",
       "type": "rust"
     },
     "rewards": {

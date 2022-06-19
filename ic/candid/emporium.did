@@ -73,4 +73,5 @@ service : (opt InitArgs) -> {
   totalSupply : () -> (nat) query;
   transfer : (principal, nat) -> (Result);
   transferFrom : (principal, principal, nat) -> (Result);
+  work : (text) -> (Result_1);
 }
