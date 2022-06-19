@@ -1,8 +1,8 @@
-# shopbot
+# emporium
 
 ## Overview
 
-Discord daily coin bot that uses fungible and non fungible tokens on the IC
+Discord daily bot that uses fungible tokens for coins and non fungible tokens for the shop on the IC
 
 ## Commands
 

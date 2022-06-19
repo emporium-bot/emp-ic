@@ -1,13 +1,8 @@
 use crate::dip20::*;
-use cap_sdk::handshake;
 use compile_time_run::run_command_str;
 use ic_kit::{
   candid::{candid_method, CandidType, Deserialize, Nat},
   ic,
-  interfaces::{
-    management::{CanisterStatus, WithCanisterId},
-    Method,
-  },
   macros::*,
   Principal,
 };
@@ -47,6 +42,9 @@ fn get_users() -> Vec<ledger::User> {
 // BEGIN USER METHODS //
 
 /// Register daily submission for user, requires registration
+///
+/// Users can only submit once per day, minumum 20 hours after previous submission,
+/// with the streak running out after 28 hrs.
 #[update]
 #[candid_method]
 fn daily(discord_user: String) -> Result<String, String> {
@@ -60,13 +58,13 @@ fn daily(discord_user: String) -> Result<String, String> {
 
     // Check if the user has already submitted within 18 hours
     // If so, reject the request
-    if now - user.daily.last_timestamp < 18 * ONE_HOUR {
+    if now - user.daily.last_timestamp < 20 * ONE_HOUR {
       return Err("Already submitted today".to_string());
     }
 
     // Update the user's daily streak
-    // reset streak if last was over 24 hrs
-    if now - user.daily.last_timestamp > 24 * ONE_HOUR {
+    // reset streak if last was over 28 hrs
+    if now - user.daily.last_timestamp > 28 * ONE_HOUR {
       user.daily.streak = 0;
     } else {
       user.daily.streak += 1;
@@ -75,12 +73,47 @@ fn daily(discord_user: String) -> Result<String, String> {
 
     // Update the user's coins
     // user gets exponentially increasing amounts the longer the streak
-    // TODO: Define a more gradual increase
-    user.coins += user.daily.streak.pow(2);
-
-    // TODO: initiate transfer OR mint for user
+    // TODO: Define a more gradual increase, and taper off at a price
+    let amount = user.daily.streak.pow(2);
+    dip20::mint(user.principal, Nat::from(amount));
 
     Ok("Daily submission successful".to_string())
+  })
+}
+
+/// Register work submission for user, requires registration
+///
+/// Users can only submit once every hour, with the streak running out after 2 hours
+#[update]
+#[candid_method]
+fn work(discord_user: String) -> Result<String, String> {
+  ledger::with_mut(|data| {
+    let mut user = data
+      .users
+      .get_mut(&discord_user)
+      .ok_or("Unregistered user")?;
+
+    let now = ic::time();
+
+    // check if user has submitted in the last ONE_HOUR
+    if now - user.work.last_timestamp < ONE_HOUR {
+      return Err("Already submitted".to_string());
+    }
+
+    // update the user's work streak
+    // reset streak if last was over 2 hrs
+    if (now - user.work.last_timestamp > 2 * ONE_HOUR) || user.work.last_timestamp == 0 {
+      user.work.streak = 0;
+    } else {
+      user.work.streak += 1;
+    }
+
+    // TODO: reward coins for work streak
+    // user gets exponentially increasing amounts the longer the streak
+
+    // update the user's coins
+    // user gets exponentially increasing amounts the longer the streak
+    Ok("Work submission successful".to_string())
   })
 }
 
@@ -153,7 +186,7 @@ fn init(args: Option<InitArgs>) {
   let args = args.unwrap();
   ledger::with_mut(|ledger| {
     ledger.nft_canister = args.nft_canister;
-    handshake(1_000_000_000_000, args.cap_canister);
+    cap_sdk::handshake(1_000_000_000_000, args.cap_canister);
   });
 
   ledger::custodians_mut(|custodians| match args.custodians {

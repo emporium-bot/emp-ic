@@ -201,7 +201,7 @@ async fn transfer_from(from: Principal, to: Principal, value: Nat) -> TxReceipt 
 
 #[update]
 #[candid_method(update)]
-async fn approve(spender: Principal, value: Nat) -> TxReceipt {
+pub async fn approve(spender: Principal, value: Nat) -> TxReceipt {
   let owner = ic::caller();
   let fee = _get_fee();
   if balance_of(owner) < fee.clone() {
@@ -273,7 +273,7 @@ async fn approve(spender: Principal, value: Nat) -> TxReceipt {
 
 #[query(name = "balanceOf")]
 #[candid_method(query, rename = "balanceOf")]
-fn balance_of(id: Principal) -> Nat {
+pub fn balance_of(id: Principal) -> Nat {
   BALANCES.with(|b| {
     let balances = b.borrow();
     match balances.get(&id) {
@@ -285,7 +285,7 @@ fn balance_of(id: Principal) -> Nat {
 
 #[query]
 #[candid_method(query)]
-fn allowance(owner: Principal, spender: Principal) -> Nat {
+pub fn allowance(owner: Principal, spender: Principal) -> Nat {
   ALLOWS.with(|a| {
     let allowances = a.borrow();
     match allowances.get(&owner) {
@@ -300,7 +300,7 @@ fn allowance(owner: Principal, spender: Principal) -> Nat {
 
 #[query]
 #[candid_method(query)]
-fn logo() -> String {
+pub fn logo() -> String {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.logo.clone()
@@ -309,7 +309,7 @@ fn logo() -> String {
 
 #[query]
 #[candid_method(query)]
-fn name() -> String {
+pub fn name() -> String {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.name.clone()
@@ -318,7 +318,7 @@ fn name() -> String {
 
 #[query]
 #[candid_method(query)]
-fn symbol() -> String {
+pub fn symbol() -> String {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.symbol.clone()
@@ -327,7 +327,7 @@ fn symbol() -> String {
 
 #[query]
 #[candid_method(query)]
-fn decimals() -> u8 {
+pub fn decimals() -> u8 {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.decimals
@@ -336,7 +336,7 @@ fn decimals() -> u8 {
 
 #[query(name = "totalSupply")]
 #[candid_method(query, rename = "totalSupply")]
-fn total_supply() -> Nat {
+pub fn total_supply() -> Nat {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.total_supply.clone()
@@ -345,7 +345,7 @@ fn total_supply() -> Nat {
 
 #[query]
 #[candid_method(query)]
-fn owner() -> Principal {
+pub fn owner() -> Principal {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.owner
@@ -354,7 +354,7 @@ fn owner() -> Principal {
 
 #[query(name = "getMetadata")]
 #[candid_method(query, rename = "getMetadata")]
-fn get_metadata() -> Metadata {
+pub fn get_metadata() -> Metadata {
   STATS.with(|stats| {
     let s = stats.borrow().clone();
     Metadata {
@@ -371,7 +371,7 @@ fn get_metadata() -> Metadata {
 
 #[query(name = "historySize")]
 #[candid_method(query, rename = "historySize")]
-fn history_size() -> usize {
+pub fn history_size() -> usize {
   STATS.with(|s| {
     let stats = s.borrow();
     stats.history_size
@@ -380,7 +380,7 @@ fn history_size() -> usize {
 
 #[query(name = "getTokenInfo")]
 #[candid_method(query, rename = "getTokenInfo")]
-fn get_token_info() -> TokenInfo {
+pub fn get_token_info() -> TokenInfo {
   STATS.with(|s| {
     let stats = s.borrow();
     BALANCES.with(|b| {
@@ -399,7 +399,7 @@ fn get_token_info() -> TokenInfo {
 
 #[query(name = "getHolders")]
 #[candid_method(query, rename = "getHolders")]
-fn get_holders(start: usize, limit: usize) -> Vec<(Principal, Nat)> {
+pub fn get_holders(start: usize, limit: usize) -> Vec<(Principal, Nat)> {
   BALANCES.with(|b| {
     let balances = b.borrow();
     let mut balance = Vec::new();
@@ -418,7 +418,7 @@ fn get_holders(start: usize, limit: usize) -> Vec<(Principal, Nat)> {
 
 #[query(name = "getAllowanceSize")]
 #[candid_method(query, rename = "getAllowanceSize")]
-fn get_allowance_size() -> usize {
+pub fn get_allowance_size() -> usize {
   ALLOWS.with(|a| {
     let allowances = a.borrow();
     let mut size = 0;
@@ -431,7 +431,7 @@ fn get_allowance_size() -> usize {
 
 #[query(name = "getUserApprovals")]
 #[candid_method(query, rename = "getUserApprovals")]
-fn get_user_approvals(who: Principal) -> Vec<(Principal, Nat)> {
+pub fn get_user_approvals(who: Principal) -> Vec<(Principal, Nat)> {
   ALLOWS.with(|a| {
     let allowances = a.borrow();
     match allowances.get(&who) {
@@ -445,7 +445,7 @@ fn get_user_approvals(who: Principal) -> Vec<(Principal, Nat)> {
 
 #[update(guard = "_is_auth")]
 #[candid_method(update, rename = "mint")]
-async fn mint(to: Principal, amount: Nat) -> TxReceipt {
+pub async fn mint(to: Principal, amount: Nat) -> TxReceipt {
   let caller = ic::caller();
   let to_balance = balance_of(to);
 
@@ -494,15 +494,6 @@ fn set_fee_to(fee_to: Principal) {
   STATS.with(|s| {
     let mut stats = s.borrow_mut();
     stats.fee_to = fee_to;
-  });
-}
-
-#[update(name = "setOwner", guard = "_is_auth")]
-#[candid_method(update, rename = "setOwner")]
-fn set_owner(owner: Principal) {
-  STATS.with(|s| {
-    let mut stats = s.borrow_mut();
-    stats.owner = owner;
   });
 }
 
