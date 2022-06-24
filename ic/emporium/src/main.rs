@@ -72,10 +72,11 @@ async fn daily(discord_user: String) -> Result<String, String> {
       user.daily.streak += 1;
     }
     user.daily.last_timestamp = now;
-
     // user gets exponentially increasing amounts the longer the streak
     // TODO: Define a more gradual increase, and taper off at a price
-    Ok((user.principal, Nat::from(100 + user.daily.streak.pow(2))))
+    let amount = 100 + user.daily.streak.pow(2);
+    user.coins += amount;
+    Ok((user.principal, Nat::from(amount)))
   });
 
   match res {
@@ -113,10 +114,11 @@ async fn work(discord_user: String) -> Result<String, String> {
     } else {
       user.work.streak += 1;
     }
-
-    // reward user coins for their work and streak bonus
     // user gets exponentially increasing amounts the longer the streak
-    Ok((user.principal, Nat::from(100 + user.work.streak.pow(2))))
+    // TODO: Define a more gradual increase, and taper off at a price
+    let amount = 100 + user.daily.streak.pow(2);
+    user.coins += amount;
+    Ok((user.principal, Nat::from(amount)))
   });
 
   match res {
@@ -228,18 +230,20 @@ fn pre_upgrade() {
   let balances = BALANCES.with(|b| b.borrow().clone());
   let allows = ALLOWS.with(|a| a.borrow().clone());
   let tx_log = TXLOG.with(|t| t.borrow().clone());
-  ic::stable_store((ledger, custodians, stats, balances, allows, tx_log)).unwrap();
+  let cap = archive();
+  ic::stable_store((ledger, custodians, stats, balances, allows, tx_log, cap)).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  let (ledger, custodians, metadata_stored, balances_stored, allowances_stored, tx_log_stored): (
+  let (ledger, custodians, metadata_stored, balances_stored, allowances_stored, tx_log_stored, cap): (
     ledger::Ledger,
     Vec<Principal>,
     StatsData,
     Balances,
     Allowances,
     TxLog,
+    Archive,
   ) = ic::stable_restore().unwrap();
   ledger::with_mut(|ledger| {
     *ledger = ledger.clone();
@@ -263,6 +267,7 @@ fn post_upgrade() {
     let mut tx_log = t.borrow_mut();
     *tx_log = tx_log_stored;
   });
+  from_archive(cap);
 }
 
 #[query(name = "gitCommitHash")]
