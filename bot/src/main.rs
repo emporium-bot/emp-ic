@@ -119,9 +119,8 @@ impl EventHandler for Handler {
           .say(
             &ctx.http,
             format!(
-              "Run the following command in your terminal: ```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}#{}\")'```",
-              msg.author.name,
-              msg.author.discriminator
+              "Run the following command in your terminal: ```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}\")'```",
+              msg.author.id
             ),
           )
           .await

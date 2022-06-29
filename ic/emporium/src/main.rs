@@ -144,9 +144,9 @@ async fn work(discord_user: String) -> Result<String, String> {
 #[candid_method]
 fn register(discord_user: String) -> Result<String, String> {
     // regex check for valid discord username
-    let re = Regex::new(r"^(.{3,32})#(\d{4})$").unwrap();
+    let re = Regex::new(r"^\d{17,18}$").unwrap();
     if !re.is_match(&discord_user) {
-        return Err("Invalid discord username".to_string());
+        return Err("Invalid discord unique id".to_string());
     }
 
     ledger::with_mut(|data| {
