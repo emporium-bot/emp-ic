@@ -48,6 +48,7 @@ impl EventHandler for Handler {
                     _ => "error",
                 }
                 .replace("(variant { Ok = \"", "")
+                .replace("(variant { Err = \"", "")
                 .replace("\" })", "");
                 println!("{}", response);
                 if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
@@ -69,6 +70,7 @@ impl EventHandler for Handler {
                     _ => "error",
                 }
                 .replace("(variant { Ok = \"", "")
+                .replace("(variant { Err = \"", "")
                 .replace("\" })", "");
                 println!("{}", response);
                 if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
