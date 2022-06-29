@@ -14,7 +14,7 @@ const HELP_TEXT: &str = "
 .ping - Ping the bot
 .daily - Get a daily reward
 .work - Work for money
-.user <optional user#1234> - get your current rewards status
+.user <optional user> - get your current rewards status
 .register - Prints dfx command for registering a discord account
 ```
 ";
@@ -46,12 +46,16 @@ impl EventHandler for Handler {
                 let response = match str::from_utf8(&result.stdout) {
                     Ok(r) => r,
                     _ => "error",
-                }
-                .replace("(variant { Ok = \"", "")
-                .replace("(variant { Err = \"", "")
-                .replace("\" })", "");
-                println!("{}", response);
-                if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
+                };
+
+                let re = regex::Regex::new(r#"(")[^"]+(")"#).expect("failed to compile regex");
+                let formatted_resp = re.find(response).map(|x| x.as_str()).unwrap_or("");
+                println!("{}", formatted_resp);
+                if let Err(e) = msg
+                    .channel_id
+                    .say(&ctx.http, formatted_resp.replace(r#"""#, ""))
+                    .await
+                {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content == ".daily" {
@@ -68,12 +72,16 @@ impl EventHandler for Handler {
                 let response = match str::from_utf8(&result.stdout) {
                     Ok(r) => r,
                     _ => "error",
-                }
-                .replace("(variant { Ok = \"", "")
-                .replace("(variant { Err = \"", "")
-                .replace("\" })", "");
-                println!("{}", response);
-                if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
+                };
+
+                let re = regex::Regex::new(r#"(")[^"]+(")"#).expect("failed to compile regex");
+                let formatted_resp = re.find(response).map(|x| x.as_str()).unwrap_or("");
+                println!("{}", formatted_resp);
+                if let Err(e) = msg
+                    .channel_id
+                    .say(&ctx.http, formatted_resp.replace(r#"""#, ""))
+                    .await
+                {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content.starts_with(".user") {
