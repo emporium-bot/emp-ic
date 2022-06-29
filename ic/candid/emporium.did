@@ -37,7 +37,7 @@ type TxError = variant {
 };
 type User = record {
   "principal" : principal;
-  coins : nat64;
+  total_rewards : nat64;
   work : StreakData;
   discord_id : text;
   daily : StreakData;

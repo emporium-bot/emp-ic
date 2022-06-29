@@ -1,3 +1,5 @@
+use candid::types::ic_types::principal;
+use derive_new::new;
 use ic_kit::{
     candid::{CandidType, Deserialize},
     ic, Principal,
@@ -11,30 +13,49 @@ pub struct StreakData {
     pub streak: u64,
 }
 
+impl StreakData {
+    pub fn new() -> Self {
+        Self {
+            last_timestamp: 0,
+            streak: 1,
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, CandidType)]
 pub struct User {
     pub discord_id: String,
     pub principal: Principal,
     pub daily: StreakData,
     pub work: StreakData,
-    pub coins: u64,
+    pub total_rewards: u64,
 }
 
-#[derive(Clone, Deserialize, CandidType)]
+impl User {
+    pub fn new(discord_id: String, principal: Principal) -> Self {
+        Self {
+            discord_id: discord_id,
+            principal,
+            daily: StreakData::new(),
+            work: StreakData::new(),
+            total_rewards: 0,
+        }
+    }
+}
+
+#[derive(Clone, Deserialize, CandidType, new)]
 pub struct Ledger {
     pub total_users: u64,
-    pub ft_canister: Option<Principal>,
     pub nft_canister: Option<Principal>,
     pub users: HashMap<String, User>,
 }
 
 thread_local! {
-  static LEDGER: RefCell<Ledger> = RefCell::new(Ledger {
-    total_users: 0,
-    ft_canister: None,
-    nft_canister: None,
-    users: HashMap::new(),
-  });
+  static LEDGER: RefCell<Ledger> = RefCell::new(Ledger::new(
+    0,
+    None,
+    HashMap::new(),
+  ));
   static CUSTODIANS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
 }
 
