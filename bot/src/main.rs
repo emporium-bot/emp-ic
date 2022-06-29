@@ -33,7 +33,7 @@ impl EventHandler for Handler {
                     println!("Error sending message: {:?}", why);
                 }
             } else if msg.content == ".work" {
-                let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
+                let user = format!("{}", msg.author.id);
                 println!("{} work", user);
                 let result = Command::new("bash")
           .arg("-c")
@@ -56,7 +56,7 @@ impl EventHandler for Handler {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content == ".daily" {
-                let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
+                let user = format!("{}", msg.author.id);
                 println!("{} daily", user);
                 let result = Command::new("bash")
           .arg("-c")
@@ -82,9 +82,9 @@ impl EventHandler for Handler {
                 let args: Vec<&str> = msg.content.split_whitespace().collect();
                 let user: String;
                 if args.len() == 1 {
-                    user = format!("{}#{}", msg.author.name, msg.author.discriminator);
+                    user = format!("{}", msg.author.id);
                 } else {
-                    user = args[1].to_string();
+                    user = args[1].to_string().replace("<@", "").replace(">", "");
                 }
 
                 print!("{} user info", user);
