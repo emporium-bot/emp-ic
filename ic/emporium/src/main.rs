@@ -88,7 +88,7 @@ async fn daily(discord_user: String) -> Result<String, String> {
             dip20::mint(principal, amount.clone())
                 .await
                 .map_err(|e| format!("{:?}", e))?;
-            Ok(format!("@{}, daily rewards: {}", discord_user, amount))
+            Ok(format!("<@{}>, daily rewards: {}", discord_user, amount))
         }
         Err(e) => Err(e),
     }
@@ -133,7 +133,7 @@ async fn work(discord_user: String) -> Result<String, String> {
             dip20::mint(principal, amount.clone())
                 .await
                 .map_err(|e| format!("{:?}", e))?;
-            Ok(format!("@{}, work rewards: {}", discord_user, amount))
+            Ok(format!("<@{}>, work rewards: {}", discord_user, amount))
         }
         Err(e) => Err(e),
     }
@@ -162,7 +162,7 @@ fn register(discord_user: String) -> Result<String, String> {
         data.total_users += 1;
 
         Ok(format!(
-            "@{}, registered principal id: `{:}`",
+            "<@{}>, registered principal id: `{:}`",
             discord_user, caller
         ))
     })

@@ -68,6 +68,7 @@ service : (opt InitArgs) -> {
   setFeeTo : (principal) -> ();
   setLogo : (text) -> ();
   setName : (text) -> ();
+  setSymbol : (text) -> ();
   set_principal : (text, principal) -> (Result_2);
   symbol : () -> (text) query;
   totalSupply : () -> (nat) query;
