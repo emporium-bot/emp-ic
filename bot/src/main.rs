@@ -18,12 +18,6 @@ const HELP_TEXT: &str = "
 ```
 ";
 
-const REGISTER_TEXT: &str = "
-```
-dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"user#1234\")'
-```
-";
-
 #[async_trait]
 impl EventHandler for Handler {
   // Set a handler for the `message` event - so that whenever a new message
@@ -53,7 +47,11 @@ impl EventHandler for Handler {
           _ => "error",
         };
         println!("{}", response);
-        if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
+        if let Err(e) = msg
+          .channel_id
+          .say(&ctx.http, format!("```{}```", response))
+          .await
+        {
           println!("Error sending message: {:?}", e);
         }
       } else if msg.content == ".daily" {
@@ -72,7 +70,11 @@ impl EventHandler for Handler {
           _ => "error",
         };
         println!("{}", response);
-        if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
+        if let Err(e) = msg
+          .channel_id
+          .say(&ctx.http, format!("```{}```", response))
+          .await
+        {
           println!("Error sending message: {:?}", e);
         }
       } else if msg.content == ".help" {
@@ -80,7 +82,18 @@ impl EventHandler for Handler {
           println!("Error sending message: {:?}", e);
         }
       } else if msg.content == ".register" {
-        if let Err(e) = msg.channel_id.say(&ctx.http, REGISTER_TEXT).await {
+        if let Err(e) = msg
+          .channel_id
+          .say(
+            &ctx.http,
+            format!(
+              "Run the following command in your terminal: ```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}#{}\")'```",
+              msg.author.name,
+              msg.author.discriminator
+            ),
+          )
+          .await
+        {
           println!("Error sending message: {:?}", e);
         }
       }
