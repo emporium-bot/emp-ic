@@ -1,5 +1,3 @@
-use std::{collections::HashMap, fmt::format};
-
 use crate::dip20::*;
 use cap_sdk::{archive, from_archive, Archive};
 use compile_time_run::run_command_str;
@@ -9,7 +7,6 @@ use ic_kit::{
     ic,
     macros::*,
 };
-use ledger::StreakData;
 use regex::Regex;
 
 // mod http;

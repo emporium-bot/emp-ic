@@ -1,4 +1,3 @@
-use candid::types::ic_types::principal;
 use derive_new::new;
 use ic_kit::{
     candid::{CandidType, Deserialize},

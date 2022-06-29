@@ -83,12 +83,6 @@ pub type Allowances = HashMap<Principal, HashMap<Principal, Nat>>;
 pub enum TxError {
     InsufficientBalance,
     InsufficientAllowance,
-    Unauthorized,
-    LedgerTrap,
-    AmountTooSmall,
-    BlockUsed,
-    ErrorOperationStyle,
-    ErrorTo,
     Other(String),
 }
 pub type TxReceipt = Result<Nat, TxError>;
