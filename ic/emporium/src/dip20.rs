@@ -173,11 +173,11 @@ async fn transfer_from(from: Principal, to: Principal, value: Nat) -> TxReceipt 
                 let result = inner.get(&owner).unwrap().clone();
                 let mut temp = inner.clone();
                 if result.clone() - value.clone() - fee.clone() != 0 {
-                    temp.insert(owner, result.clone() - value.clone() - fee.clone());
+                    temp.insert(owner, result - value.clone() - fee.clone());
                     allowances.insert(from, temp);
                 } else {
                     temp.remove(&owner);
-                    if temp.len() == 0 {
+                    if temp.is_empty() {
                         allowances.remove(&from);
                     } else {
                         allowances.insert(from, temp);
@@ -185,7 +185,7 @@ async fn transfer_from(from: Principal, to: Principal, value: Nat) -> TxReceipt 
                 }
             }
             None => {
-                assert!(false);
+                unreachable!();
             }
         }
     });
@@ -213,7 +213,7 @@ pub async fn approve(spender: Principal, value: Nat) -> TxReceipt {
                     allowances.insert(owner, temp);
                 } else {
                     temp.remove(&spender);
-                    if temp.len() == 0 {
+                    if temp.is_empty() {
                         allowances.remove(&owner);
                     } else {
                         allowances.insert(owner, temp);
@@ -398,7 +398,7 @@ pub fn get_holders(start: usize, limit: usize) -> Vec<(Principal, Nat)> {
         let balances = b.borrow();
         let mut balance = Vec::new();
         for (k, v) in balances.iter() {
-            balance.push((k.clone(), v.clone()));
+            balance.push((*k, v.clone()));
         }
         balance.sort_by(|a, b| b.1.cmp(&a.1));
         let limit: usize = if start + limit > balance.len() {

@@ -33,7 +33,7 @@ pub struct User {
 impl User {
     pub fn new(discord_id: String, principal: Principal) -> Self {
         Self {
-            discord_id: discord_id,
+            discord_id,
             principal,
             daily: StreakData::new(),
             work: StreakData::new(),

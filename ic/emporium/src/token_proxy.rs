@@ -56,6 +56,11 @@ pub enum NftError {
     Other(String),
 }
 
+pub type NftResult = Result<(), NftError>;
+pub type NftNatResult = Result<Nat, NftError>;
+pub type NftPrincipalResult = Result<Option<Principal>, NftError>;
+pub type NftMetadataResult = Result<TokenMetadata, NftError>;
+
 pub(crate) struct _DIP721v2Proxy {}
 
 impl _DIP721v2Proxy {
@@ -67,12 +72,8 @@ impl _DIP721v2Proxy {
         token_id: &Nat,
         contract: &Principal,
     ) -> Result<Nat, String> {
-        let call_res: Result<(Result<Nat, NftError>,), (RejectionCode, String)> = ic::call(
-            *contract,
-            "transferFrom",
-            (*from, *to, Nat::from(token_id.clone())),
-        )
-        .await;
+        let call_res: Result<(NftNatResult,), (RejectionCode, String)> =
+            ic::call(*contract, "transferFrom", (*from, *to, token_id.clone())).await;
 
         call_res
             .map_err(|err| format!("{:?}", err))?
@@ -85,8 +86,8 @@ impl _DIP721v2Proxy {
         to: &Principal,
         token_id: &Nat,
     ) -> Result<Nat, String> {
-        let call_res: Result<(Result<Nat, NftError>,), (RejectionCode, String)> =
-            ic::call(*contract, "transfer", (*to, Nat::from(token_id.clone()))).await;
+        let call_res: Result<(NftNatResult,), (RejectionCode, String)> =
+            ic::call(*contract, "transfer", (*to, token_id.clone())).await;
 
         let res = call_res
             .map_err(|err| format!("{:?}", err))?
@@ -105,8 +106,8 @@ impl _DIP721v2Proxy {
         token_id: &Nat,
         contract: &Principal,
     ) -> Result<TokenMetadata, String> {
-        let call_res: Result<(Result<TokenMetadata, NftError>,), (RejectionCode, String)> =
-            ic::call(*contract, "tokenMetadata", (Nat::from(token_id.clone()),)).await;
+        let call_res: Result<(NftMetadataResult,), (RejectionCode, String)> =
+            ic::call(*contract, "tokenMetadata", (token_id.clone(),)).await;
 
         call_res
             .map_err(|err| format!("{:?}", err))?
@@ -118,8 +119,8 @@ impl _DIP721v2Proxy {
         contract: &Principal,
         token_id: &Nat,
     ) -> Result<Option<Principal>, String> {
-        let call_res: Result<(Result<Option<Principal>, NftError>,), (RejectionCode, String)> =
-            ic::call(*contract, "ownerOf", (Nat::from(token_id.clone()),)).await;
+        let call_res: Result<(NftPrincipalResult,), (RejectionCode, String)> =
+            ic::call(*contract, "ownerOf", (token_id.clone(),)).await;
 
         call_res
             .map_err(|err| format!("{:?}", err))?
@@ -131,8 +132,8 @@ impl _DIP721v2Proxy {
         contract: &Principal,
         token_id: &Nat,
     ) -> Result<Option<Principal>, String> {
-        let call_res: Result<(Result<Option<Principal>, NftError>,), (RejectionCode, String)> =
-            ic::call(*contract, "operatorOf", (Nat::from(token_id.clone()),)).await;
+        let call_res: Result<(NftPrincipalResult,), (RejectionCode, String)> =
+            ic::call(*contract, "operatorOf", (token_id.clone(),)).await;
 
         call_res
             .map_err(|err| format!("{:?}", err))?
