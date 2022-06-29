@@ -8,6 +8,15 @@ use std::{process::Command, str};
 
 struct Handler;
 
+const HELP_TEXT: &str = "
+```
+.help - Show this message
+.ping - Ping the bot
+.daily - Get a daily reward
+.work - Work for money
+```
+";
+
 #[async_trait]
 impl EventHandler for Handler {
   // Set a handler for the `message` event - so that whenever a new message
@@ -17,7 +26,7 @@ impl EventHandler for Handler {
   // events can be dispatched simultaneously.
   async fn message(&self, ctx: Context, msg: Message) {
     if msg.author.bot == false {
-      if msg.content == "!ping" {
+      if msg.content == ".ping" {
         // Sending a message can fail, due to a network error, an
         // authentication error, or lack of permissions to post in the
         // channel, so log to stdout when some error happens, with a
@@ -25,13 +34,13 @@ impl EventHandler for Handler {
         if let Err(why) = msg.channel_id.say(&ctx.http, "Pong!").await {
           println!("Error sending message: {:?}", why);
         }
-      } else if msg.content == "!work" {
+      } else if msg.content == ".work" {
         let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
         println!("{} worked", user);
         let result = Command::new("sh")
           .arg("-c")
           .arg(format!(
-            "dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai work \'(\"{}\")\'",
+            "cd ../ic && dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai work \'(\"{}\")\'",
             user
           ))
           .output()
@@ -44,13 +53,13 @@ impl EventHandler for Handler {
         if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
           println!("Error sending message: {:?}", e);
         }
-      } else if msg.content == "!daily" {
+      } else if msg.content == ".daily" {
         let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
         println!("{} worked", user);
         let result = Command::new("sh")
           .arg("-c")
           .arg(format!(
-            "dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai daily \'(\"{}\")\'",
+            "cd ../ic && dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai daily \'(\"{}\")\'",
             user
           ))
           .output()
@@ -61,6 +70,10 @@ impl EventHandler for Handler {
         };
         println!("{}", response);
         if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
+          println!("Error sending message: {:?}", e);
+        }
+      } else if msg.content == ".help" {
+        if let Err(e) = msg.channel_id.say(&ctx.http, HELP_TEXT).await {
           println!("Error sending message: {:?}", e);
         }
       }
