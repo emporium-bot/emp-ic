@@ -19,6 +19,12 @@ const HELP_TEXT: &str = "
 ```
 ";
 
+const REGISTER_TEXT: &str = "```
+1. Add the emporium (au7z2-aaaaa-aaaah-abk7a-cai) canister to plug
+2. Export/Import your plug identity into dfx
+3. Run the following command in your terminal:
+```";
+
 #[async_trait]
 impl EventHandler for Handler {
     // Set a handler for the `message` event - so that whenever a new message
@@ -126,7 +132,8 @@ impl EventHandler for Handler {
           .say(
             &ctx.http,
             format!(
-              "Run the following command in your terminal: ```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}\")'```",
+              "{}```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}\")'```",
+              REGISTER_TEXT,
               msg.author.id
             ),
           )
