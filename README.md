@@ -4,6 +4,8 @@
 
 Discord daily bot that uses fungible tokens for coins and non fungible tokens for the shop on the IC
 
+Users will need to register via dfx for now to be able to start earning rewards
+
 ## Commands
 
 ### `register <principal id>`
