@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
 use crate::dip20::*;
 use cap_sdk::{archive, from_archive, Archive};
@@ -18,6 +18,7 @@ mod ledger;
 mod token_proxy;
 
 const ONE_HOUR: u64 = 3_600_000_000_000;
+const ONE_MINUTE: u64 = 60_000_000_000;
 
 // #[update]
 // #[candid_method]
@@ -60,11 +61,18 @@ async fn daily(discord_user: String) -> Result<String, String> {
             .ok_or("Unregistered user")?;
 
         let now = ic::time();
+        let difference = now - user.daily.last_timestamp;
 
         // Check if the user has already submitted within 18 hours
         // If so, reject the request
-        if now - user.daily.last_timestamp < 20 * ONE_HOUR {
-            return Err("Already submitted today".to_string());
+        if difference < 20 * ONE_HOUR {
+            let hours = (20 * ONE_HOUR - difference) / ONE_HOUR;
+            let minutes = ((20 * ONE_HOUR - difference) % ONE_HOUR) / ONE_MINUTE;
+
+            return Err(format!(
+                "<@{}>, try again in {} hrs {} mins",
+                discord_user, hours, minutes
+            ));
         }
 
         // Update the user's daily streak
@@ -107,10 +115,15 @@ async fn work(discord_user: String) -> Result<String, String> {
             .ok_or("Unregistered user")?;
 
         let now = ic::time();
+        let difference = now - user.work.last_timestamp;
 
         // check if user has submitted in the last ONE_HOUR
-        if now - user.work.last_timestamp < ONE_HOUR {
-            return Err("Already submitted".to_string());
+        if difference < ONE_HOUR {
+            return Err(format!(
+                "<@{}>, you can work again in {} minutes!",
+                discord_user,
+                (ONE_HOUR - difference) / ONE_MINUTE
+            ));
         }
 
         // update the user's work streak
