@@ -14,6 +14,13 @@ const HELP_TEXT: &str = "
 .ping - Ping the bot
 .daily - Get a daily reward
 .work - Work for money
+.register - Prints dfx command for registering a discord account
+```
+";
+
+const REGISTER_TEXT: &str = "
+```
+dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"<user#1234>\")'
 ```
 ";
 
@@ -74,6 +81,10 @@ impl EventHandler for Handler {
         }
       } else if msg.content == ".help" {
         if let Err(e) = msg.channel_id.say(&ctx.http, HELP_TEXT).await {
+          println!("Error sending message: {:?}", e);
+        }
+      } else if msg.content == ".register" {
+        if let Err(e) = msg.channel_id.say(&ctx.http, REGISTER_TEXT).await {
           println!("Error sending message: {:?}", e);
         }
       }
