@@ -20,7 +20,7 @@ const HELP_TEXT: &str = "
 
 const REGISTER_TEXT: &str = "
 ```
-dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"<user#1234>\")'
+dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"user#1234\")'
 ```
 ";
 
