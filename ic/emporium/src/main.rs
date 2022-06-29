@@ -70,7 +70,7 @@ async fn daily(discord_user: String) -> Result<String, String> {
             let minutes = ((20 * ONE_HOUR - difference) % ONE_HOUR) / ONE_MINUTE;
 
             return Err(format!(
-                "<@{}>, try again in {} hrs {} mins",
+                "<@{}>, daily rewards already claimed! Try again in {} hours, {} minutes.",
                 discord_user, hours, minutes
             ));
         }
@@ -96,7 +96,10 @@ async fn daily(discord_user: String) -> Result<String, String> {
             dip20::mint(principal, amount.clone())
                 .await
                 .map_err(|e| format!("{:?}", e))?;
-            Ok(format!("<@{}>, daily rewards: {}", discord_user, amount))
+            Ok(format!(
+                "<@{}>, claimed `{} EMP` daily rewards!",
+                discord_user, amount
+            ))
         }
         Err(e) => Err(e),
     }
@@ -120,7 +123,7 @@ async fn work(discord_user: String) -> Result<String, String> {
         // check if user has submitted in the last ONE_HOUR
         if difference < ONE_HOUR {
             return Err(format!(
-                "<@{}>, you can work again in {} minutes!",
+                "<@{}>, you are already working! try again in {} minutes.",
                 discord_user,
                 (ONE_HOUR - difference) / ONE_MINUTE
             ));
@@ -146,7 +149,10 @@ async fn work(discord_user: String) -> Result<String, String> {
             dip20::mint(principal, amount.clone())
                 .await
                 .map_err(|e| format!("{:?}", e))?;
-            Ok(format!("<@{}>, work rewards: {}", discord_user, amount))
+            Ok(format!(
+                "<@{}>, is working! Rewards: `{} EMP`",
+                discord_user, amount
+            ))
         }
         Err(e) => Err(e),
     }
