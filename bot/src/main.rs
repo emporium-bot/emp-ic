@@ -46,13 +46,11 @@ impl EventHandler for Handler {
                 let response = match str::from_utf8(&result.stdout) {
                     Ok(r) => r,
                     _ => "error",
-                };
+                }
+                .replace("(variant { Ok = \"", "")
+                .replace("\" })", "");
                 println!("{}", response);
-                if let Err(e) = msg
-                    .channel_id
-                    .say(&ctx.http, format!("```{}```", response))
-                    .await
-                {
+                if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content == ".daily" {
@@ -69,13 +67,11 @@ impl EventHandler for Handler {
                 let response = match str::from_utf8(&result.stdout) {
                     Ok(r) => r,
                     _ => "error",
-                };
+                }
+                .replace("(variant { Ok = \"", "")
+                .replace("\" })", "");
                 println!("{}", response);
-                if let Err(e) = msg
-                    .channel_id
-                    .say(&ctx.http, format!("```{}```", response))
-                    .await
-                {
+                if let Err(e) = msg.channel_id.say(&ctx.http, response).await {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content.starts_with(".user") {
@@ -101,6 +97,7 @@ impl EventHandler for Handler {
                     Ok(r) => r,
                     _ => "error",
                 };
+
                 println!("{}", response);
                 if let Err(e) = msg
                     .channel_id
