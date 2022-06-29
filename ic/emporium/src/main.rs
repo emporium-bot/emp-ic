@@ -1,11 +1,11 @@
 use crate::dip20::*;
 use cap_sdk::{archive, from_archive, Archive};
 use compile_time_run::run_command_str;
+use ic_cdk::export::Principal;
 use ic_kit::{
   candid::{candid_method, CandidType, Deserialize, Nat},
   ic,
   macros::*,
-  Principal,
 };
 use regex::Regex;
 
@@ -14,7 +14,7 @@ mod dip20;
 mod ledger;
 mod token_proxy;
 
-const ONE_HOUR: u64 = 3_600_000_000;
+const ONE_HOUR: u64 = 3_600_000_000_000;
 
 // #[update]
 // #[candid_method]
@@ -236,7 +236,15 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  let (ledger, custodians, metadata_stored, balances_stored, allowances_stored, tx_log_stored, cap): (
+  let (
+    ledger_stored,
+    custodians_stored,
+    metadata_stored,
+    balances_stored,
+    allowances_stored,
+    tx_log_stored,
+    cap,
+  ): (
     ledger::Ledger,
     Vec<Principal>,
     StatsData,
@@ -246,10 +254,10 @@ fn post_upgrade() {
     Archive,
   ) = ic::stable_restore().unwrap();
   ledger::with_mut(|ledger| {
-    *ledger = ledger.clone();
+    *ledger = ledger_stored.clone();
   });
   ledger::custodians_mut(|custodians| {
-    *custodians = custodians.clone();
+    *custodians = custodians_stored.clone();
   });
   STATS.with(|s| {
     let mut stats = s.borrow_mut();
