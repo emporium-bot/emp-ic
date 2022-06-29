@@ -33,7 +33,7 @@ impl EventHandler for Handler {
         }
       } else if msg.content == ".work" {
         let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
-        println!("{} worked", user);
+        println!("{} work", user);
         let result = Command::new("bash")
           .arg("-c")
           .arg(format!(
@@ -56,11 +56,33 @@ impl EventHandler for Handler {
         }
       } else if msg.content == ".daily" {
         let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
-        println!("{} worked", user);
+        println!("{} daily", user);
         let result = Command::new("bash")
           .arg("-c")
           .arg(format!(
             "cd ../ic && dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai daily '(\"{}\")'",
+            user
+          ))
+          .output()
+          .expect("failed to execute process");
+        let response = match str::from_utf8(&result.stdout) {
+          Ok(r) => r,
+          _ => "error",
+        };
+        println!("{}", response);
+        if let Err(e) = msg
+          .channel_id
+          .say(&ctx.http, format!("```{}```", response))
+          .await
+        {
+          println!("Error sending message: {:?}", e);
+        }
+      } else if msg.content.starts_with(".user") {
+        let user = format!("{}#{}", msg.author.name, msg.author.discriminator);
+        let result = Command::new("bash")
+          .arg("-c")
+          .arg(format!(
+            "cd ../ic && dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai get_user '(\"{}\")'",
             user
           ))
           .output()
