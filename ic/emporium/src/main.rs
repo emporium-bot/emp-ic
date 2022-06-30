@@ -28,6 +28,28 @@ const ONE_MINUTE: u64 = 60_000_000_000;
 
 // BEGIN QUERY METHODS //
 
+struct BalanceResponse {
+    discord_id: String,
+    balance: Nat,
+    total_rewards: Nat,
+    daily_streak: Nat,
+    work_streak: Nat,
+}
+
+#[query]
+#[candid_method]
+fn user_balance(discord_id: String) -> Result<BalanceResponse, String> {
+    let user: ledger::User =
+        ledger::with(|ledger| ledger.users.get(&discord_id).cloned()).ok_or("User not found :(")?;
+    Ok(BalanceResponse {
+        discord_id: user.discord_id.clone(),
+        balance: balance_of(user.principal),
+        total_rewards: Nat::from(user.total_rewards),
+        daily_streak: Nat::from(user.daily.streak),
+        work_streak: Nat::from(user.work.streak),
+    })
+}
+
 #[query]
 #[candid_method]
 fn get_user(discord_id: String) -> Option<ledger::User> {

@@ -90,7 +90,7 @@ impl EventHandler for Handler {
                     .say(&ctx.http, formatted_resp.replace(r#"""#, ""))
                     .await
                 {
-                    println!("Error sending message: {:?}", e);
+                    println!("Error sending message: {:?}\n", e);
                 }
             } else if msg.content.starts_with(".user") {
                 let args: Vec<&str> = msg.content.split_whitespace().collect();
@@ -100,7 +100,7 @@ impl EventHandler for Handler {
                 } else {
                     user = args[1].to_string().replace("<@", "").replace(">", "");
                 }
-                print!(".user {}", user);
+                println!(".user {}", user);
 
                 let result = Command::new("bash")
           .arg("-c")
