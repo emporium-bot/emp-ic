@@ -14,7 +14,7 @@ const HELP_TEXT: &str = "
 .ping - Ping the bot
 .daily - Get a daily reward
 .work - Work for money
-.user <optional user> - get your current rewards status
+.balance <optional user> - get your current rewards status
 .register - Prints dfx command for registering a discord account
 ```
 ";
@@ -90,9 +90,9 @@ impl EventHandler for Handler {
                     .say(&ctx.http, formatted_resp.replace(r#"""#, ""))
                     .await
                 {
-                    println!("Error sending message: {:?}\n", e);
+                    println!("Error sending message: {:?}", e);
                 }
-            } else if msg.content.starts_with(".user") {
+            } else if msg.content.starts_with(".balance") {
                 let args: Vec<&str> = msg.content.split_whitespace().collect();
                 let user: String;
                 if args.len() == 1 {
@@ -105,7 +105,7 @@ impl EventHandler for Handler {
                 let result = Command::new("bash")
           .arg("-c")
           .arg(format!(
-            "cd ../ic && dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai get_user '(\"{}\")'",
+            "cd ../ic && dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai user_balance '(\"{}\")'",
             user
           ))
           .output()
@@ -115,7 +115,7 @@ impl EventHandler for Handler {
                     _ => "error",
                 };
 
-                println!("{}\n", response);
+                println!("-> {}\n", response);
                 if let Err(e) = msg
                     .channel_id
                     .say(&ctx.http, format!("```{}```", response))
