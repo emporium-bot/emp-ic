@@ -115,19 +115,19 @@ impl EventHandler for Handler {
                     _ => "error",
                 };
 
-                let re = regex::Regex::new(r#"{[^{}]+}"#).expect("failed to compile regex");
+                let re = regex::Regex::new(r#"\{[^\{\}]+\}"#).expect("failed to compile regex");
                 let formatted_resp = re
                     .find(response)
                     .map(|x| x.as_str())
                     .unwrap_or("")
-                    .replace(" : nat;", "");
+                    .replace(" : nat", "")
+                    .replace(r#"""#, "")
+                    .replace(";", "")
+                    .replace("{", "")
+                    .replace("}", "");
                 println!("{}", formatted_resp);
 
-                if let Err(e) = msg
-                    .channel_id
-                    .say(&ctx.http, formatted_resp.replace("{", "").replace("}", ""))
-                    .await
-                {
+                if let Err(e) = msg.channel_id.say(&ctx.http, formatted_resp).await {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content == ".help" {
