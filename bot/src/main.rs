@@ -41,6 +41,7 @@ impl EventHandler for Handler {
             } else if msg.content == ".work" {
                 let user = format!("{}", msg.author.id);
                 println!("{} work", user);
+
                 let result = Command::new("bash")
           .arg("-c")
           .arg(format!(
@@ -53,10 +54,10 @@ impl EventHandler for Handler {
                     Ok(r) => r,
                     _ => "error",
                 };
-
                 let re = regex::Regex::new(r#"(")[^"]+(")"#).expect("failed to compile regex");
                 let formatted_resp = re.find(response).map(|x| x.as_str()).unwrap_or("");
-                println!("{}", formatted_resp);
+                println!("{}\n", formatted_resp);
+
                 if let Err(e) = msg
                     .channel_id
                     .say(&ctx.http, formatted_resp.replace(r#"""#, ""))
@@ -67,6 +68,7 @@ impl EventHandler for Handler {
             } else if msg.content == ".daily" {
                 let user = format!("{}", msg.author.id);
                 println!("{} daily", user);
+
                 let result = Command::new("bash")
           .arg("-c")
           .arg(format!(
@@ -79,10 +81,10 @@ impl EventHandler for Handler {
                     Ok(r) => r,
                     _ => "error",
                 };
-
                 let re = regex::Regex::new(r#"(")[^"]+(")"#).expect("failed to compile regex");
                 let formatted_resp = re.find(response).map(|x| x.as_str()).unwrap_or("");
                 println!("{}", formatted_resp);
+
                 if let Err(e) = msg
                     .channel_id
                     .say(&ctx.http, formatted_resp.replace(r#"""#, ""))
@@ -98,8 +100,7 @@ impl EventHandler for Handler {
                 } else {
                     user = args[1].to_string().replace("<@", "").replace(">", "");
                 }
-
-                print!("{} user info", user);
+                print!(".user {}", user);
 
                 let result = Command::new("bash")
           .arg("-c")
@@ -114,7 +115,7 @@ impl EventHandler for Handler {
                     _ => "error",
                 };
 
-                println!("{}", response);
+                println!("{}\n", response);
                 if let Err(e) = msg
                     .channel_id
                     .say(&ctx.http, format!("```{}```", response))
