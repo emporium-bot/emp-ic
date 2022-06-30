@@ -14,8 +14,8 @@ const HELP_TEXT: &str = "
 .ping - Ping the bot
 .daily - Get a daily reward
 .work - Work for money
-.balance <optional user> - get your current rewards status
-.register - Prints dfx command for registering a discord account
+.balance <optional user> - get your current balances, or someone else's
+.register - Prints dfx command for registering your discord account
 ```
 ";
 
@@ -115,10 +115,17 @@ impl EventHandler for Handler {
                     _ => "error",
                 };
 
-                println!("-> {}\n", response);
+                let re = regex::Regex::new(r#"{[^{}]+}"#).expect("failed to compile regex");
+                let formatted_resp = re
+                    .find(response)
+                    .map(|x| x.as_str())
+                    .unwrap_or("")
+                    .replace(" : nat;", "");
+                println!("{}", formatted_resp);
+
                 if let Err(e) = msg
                     .channel_id
-                    .say(&ctx.http, format!("```{}```", response))
+                    .say(&ctx.http, formatted_resp.replace("{", "").replace("}", ""))
                     .await
                 {
                     println!("Error sending message: {:?}", e);
