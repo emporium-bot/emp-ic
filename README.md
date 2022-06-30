@@ -8,12 +8,12 @@ Users will need to register via dfx for now to be able to start earning rewards
 
 ## Commands
 
-### `register <principal id>`
+### `register`
 
 - user registers their principal id for their discord name
 
 ```sh
-$ dfx canister call emporium register "ossian.icp#7421"
+$ dfx canister call emporium register "0000000000000000000"
 ```
 
 ### `daily`
@@ -24,7 +24,7 @@ $ dfx canister call emporium register "ossian.icp#7421"
 - can call this method once per 18 hrs
 
 ```sh
-$ dfx canister call emporium daily "ossian.icp#7421"
+$ dfx canister call emporium daily "0000000000000000000"
 ```
 
 ### `work`
@@ -36,7 +36,7 @@ $ dfx canister call emporium daily "ossian.icp#7421"
 - TODO: the closer to hr between calls can net more tokens
 
 ```sh
-$ dfx canister call emporium work "ossian.icp#7421"
+$ dfx canister call emporium work "0000000000000000000"
 ```
 
 ### `shop`
