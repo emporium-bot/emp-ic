@@ -1,3 +1,10 @@
+type BalanceResponse = record {
+  balance : nat;
+  total_rewards : nat;
+  work_streak : nat;
+  discord_id : text;
+  daily_streak : nat;
+};
 type InitArgs = record {
   cap_canister : opt principal;
   custodians : opt vec principal;
@@ -15,6 +22,7 @@ type Metadata = record {
 type Result = variant { Ok : nat; Err : TxError };
 type Result_1 = variant { Ok : text; Err : text };
 type Result_2 = variant { Ok; Err : text };
+type Result_3 = variant { Ok : BalanceResponse; Err : text };
 type StreakData = record { streak : nat64; last_timestamp : nat64 };
 type TokenInfo = record {
   holderNumber : nat64;
@@ -27,13 +35,7 @@ type TokenInfo = record {
 type TxError = variant {
   InsufficientAllowance;
   InsufficientBalance;
-  ErrorOperationStyle;
-  Unauthorized;
-  LedgerTrap;
-  ErrorTo;
   Other : text;
-  BlockUsed;
-  AmountTooSmall;
 };
 type User = record {
   "principal" : principal;
@@ -74,5 +76,6 @@ service : (opt InitArgs) -> {
   totalSupply : () -> (nat) query;
   transfer : (principal, nat) -> (Result);
   transferFrom : (principal, principal, nat) -> (Result);
+  user_balance : (text) -> (Result_3);
   work : (text) -> (Result_1);
 }

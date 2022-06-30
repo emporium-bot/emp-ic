@@ -28,10 +28,11 @@ const ONE_MINUTE: u64 = 60_000_000_000;
 
 // BEGIN QUERY METHODS //
 
+#[derive(Clone, Deserialize, CandidType)]
 struct BalanceResponse {
     discord_id: String,
     balance: Nat,
-    total_rewards: Nat,
+    total_rewarded: Nat,
     daily_streak: Nat,
     work_streak: Nat,
 }
@@ -44,7 +45,7 @@ fn user_balance(discord_id: String) -> Result<BalanceResponse, String> {
     Ok(BalanceResponse {
         discord_id: user.discord_id.clone(),
         balance: balance_of(user.principal),
-        total_rewards: Nat::from(user.total_rewards),
+        total_rewarded: Nat::from(user.total_rewards),
         daily_streak: Nat::from(user.daily.streak),
         work_streak: Nat::from(user.work.streak),
     })
