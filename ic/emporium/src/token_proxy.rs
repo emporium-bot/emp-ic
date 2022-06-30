@@ -56,9 +56,13 @@ pub enum NftError {
     Other(String),
 }
 
+#[allow(dead_code)]
 pub type NftResult = Result<(), NftError>;
+#[allow(dead_code)]
 pub type NftNatResult = Result<Nat, NftError>;
+#[allow(dead_code)]
 pub type NftPrincipalResult = Result<Option<Principal>, NftError>;
+#[allow(dead_code)]
 pub type NftMetadataResult = Result<TokenMetadata, NftError>;
 
 pub(crate) struct _DIP721v2Proxy {}
