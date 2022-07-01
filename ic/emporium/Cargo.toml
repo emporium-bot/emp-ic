@@ -20,5 +20,10 @@ num-bigint = "0.4.3"
 compile-time-run = "0.2.12"
 cap-sdk = { git = "https://github.com/Psychedelic/cap.git", branch = "main" }
 
+[dependencies.chrono]
+version = "0.4"
+default-features = false
+features = ["std"]
+
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 async-std = { version="1.10.0", features = ["attributes"] }

@@ -1,5 +1,6 @@
 use crate::dip20::*;
 use cap_sdk::{archive, from_archive, Archive};
+use chrono::{Duration, TimeZone, Utc};
 use compile_time_run::run_command_str;
 use ic_cdk::export::Principal;
 use ic_kit::{
@@ -8,6 +9,7 @@ use ic_kit::{
     macros::*,
 };
 use regex::Regex;
+use std::convert::TryInto;
 
 // mod http;
 mod dip20;
@@ -16,6 +18,11 @@ mod token_proxy;
 
 const ONE_HOUR: u64 = 3_600_000_000_000;
 const ONE_MINUTE: u64 = 60_000_000_000;
+const BASE_REWARD: u64 = 100;
+
+// Discord emojis
+const FIRE_EMOJI: &str = "<a:Fire:940749752549650432>";
+const AYY_EMOJI: &str = "<:ayy:305818615712579584>";
 
 // #[update]
 // #[candid_method]
@@ -80,45 +87,64 @@ async fn daily(discord_user: String) -> Result<String, String> {
             .get_mut(&discord_user)
             .ok_or("Unregistered user")?;
 
-        let now = ic::time();
-        let difference = now - user.daily.last_timestamp;
+        let time = ic::time();
 
-        // Check if the user has already submitted within 18 hours
-        // If so, reject the request
-        if difference < 20 * ONE_HOUR {
-            let hours = (20 * ONE_HOUR - difference) / ONE_HOUR;
-            let minutes = ((20 * ONE_HOUR - difference) % ONE_HOUR) / ONE_MINUTE;
+        let now = Utc.timestamp_nanos(time.try_into().unwrap());
+        let last = Utc
+            .timestamp_nanos(user.daily.last_timestamp.try_into().unwrap())
+            .date()
+            .and_hms(0, 0, 0);
+
+        ic::print(format!("{}\n{}\n", last, now));
+
+        let duration = now - last;
+
+        // if were within the last day (UTC), reject the user
+        if duration.num_days() == 0 {
+            // calc offset until 00:00 tomorrow
+            let offset = (now.date().and_hms(0, 0, 0) + Duration::days(1)) - now;
 
             return Err(format!(
-                "<@{}>, daily rewards already claimed! Try again in {} hours, {} minutes.",
-                discord_user, hours, minutes
+                "<@{}>, daily rewards already claimed! Try again in {} hours, {} minutes, {}s",
+                discord_user,
+                offset.num_hours(),
+                offset.num_minutes() % 60,
+                offset.num_seconds() % 60
             ));
         }
 
-        // Update the user's daily streak
-        // reset streak if last was over 28 hrs
-        if now - user.daily.last_timestamp > 28 * ONE_HOUR {
+        // reset streak if last is more than a day old (this is super lenient for the streak)
+        if duration.num_days() > 1 {
             user.daily.streak = 0;
         }
 
-        // user gets exponentially increasing amounts the longer the streak
-        // TODO: Define a more gradual increase, and taper off at a price
-        let amount = 100 + user.daily.streak.pow(2);
-        user.total_rewards += amount;
+        // // user gets exponentially increasing amounts the longer the streak
+        // // TODO: Define a more gradual increase, and taper off at a price
+        let bonus = user.daily.streak.pow(2);
+        user.total_rewards += BASE_REWARD + bonus;
         user.daily.streak += 1;
-        user.daily.last_timestamp = now;
+        user.daily.last_timestamp = time;
 
-        Ok((user.principal, Nat::from(amount)))
+        Ok((user.principal, bonus, user.daily.streak))
     });
 
     match res {
-        Ok((principal, amount)) => {
-            dip20::mint(principal, amount.clone())
+        Ok((principal, bonus, streak)) => {
+            dip20::mint(principal, Nat::from(BASE_REWARD + bonus))
                 .await
                 .map_err(|e| format!("{:?}", e))?;
             Ok(format!(
-                "<@{}>, claimed `{} EMP` daily rewards!",
-                discord_user, amount
+                "<@{}>, claimed `{} EMP` daily rewards{}",
+                discord_user,
+                BASE_REWARD,
+                if bonus > 0 {
+                    format!(
+                        ", plus `{} EMP` streak bonus for {} days {}",
+                        bonus, streak, FIRE_EMOJI
+                    )
+                } else {
+                    format!(" {}", AYY_EMOJI)
+                },
             ))
         }
         Err(e) => Err(e),
