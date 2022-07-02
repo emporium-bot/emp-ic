@@ -19,11 +19,13 @@ const HELP_TEXT: &str = "
 ```
 ";
 
-const REGISTER_TEXT: &str = "```
-1. Add the emporium (au7z2-aaaaa-aaaah-abk7a-cai) canister to plug
-2. Export/Import your plug identity into dfx
-3. Run the following command in your terminal:
-```";
+const REGISTER_TEXT: &str = "1. Add the emporium (`au7z2-aaaaa-aaaah-abk7a-cai`) canister to plug
+2. Export/Import your plug identity into dfx, and use it. dfx commands:
+```dfx identity import plug identity.pem
+dfx identity use plug
+```
+3. Run the following command in your terminal to register your plug wallet:
+";
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -135,6 +137,10 @@ impl EventHandler for Handler {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content == ".register" {
+                println!(
+                    "user requested registeration! {} ({}#{})",
+                    msg.author.id, msg.author.name, msg.author.discriminator,
+                );
                 let response = format!(
                 "{}```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}\")'```",
                 REGISTER_TEXT,
@@ -146,16 +152,19 @@ impl EventHandler for Handler {
                     .direct_message(&ctx.http, |m| m.content(&response))
                     .await
                 {
-                    Ok(_) => {
-                        let _ = msg.react(&ctx.http, '👌');
-                    }
+                    Ok(_) => match msg.react(&ctx.http, '👌').await {
+                        Ok(_) => {}
+                        Err(why) => println!("Error adding reaction: {:?}", why),
+                    },
                     Err(why) => {
                         println!("Err sending help: {:?}", why);
 
-                        let _ = msg.reply(
-                            &ctx.http,
-                            "There was an error DMing you the registration instructions",
-                        );
+                        let _ = msg
+                            .reply(
+                                &ctx.http,
+                                "There was an error DMing you the registration instructions",
+                            )
+                            .await;
                     }
                 };
             }
