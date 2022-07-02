@@ -135,20 +135,29 @@ impl EventHandler for Handler {
                     println!("Error sending message: {:?}", e);
                 }
             } else if msg.content == ".register" {
-                if let Err(e) = msg
-          .channel_id
-          .say(
-            &ctx.http,
-            format!(
-              "{}```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}\")'```",
-              REGISTER_TEXT,
-              msg.author.id
-            ),
-          )
-          .await
-        {
-          println!("Error sending message: {:?}", e);
-        }
+                let response = format!(
+                "{}```dfx canister --network ic call au7z2-aaaaa-aaaah-abk7a-cai register '(\"{}\")'```",
+                REGISTER_TEXT,
+                msg.author.id
+              );
+
+                match msg
+                    .author
+                    .direct_message(&ctx.http, |m| m.content(&response))
+                    .await
+                {
+                    Ok(_) => {
+                        let _ = msg.react(&ctx.http, '👌');
+                    }
+                    Err(why) => {
+                        println!("Err sending help: {:?}", why);
+
+                        let _ = msg.reply(
+                            &ctx.http,
+                            "There was an error DMing you the registration instructions",
+                        );
+                    }
+                };
             }
         }
     }
