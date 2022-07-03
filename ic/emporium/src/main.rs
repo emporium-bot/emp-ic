@@ -15,14 +15,28 @@ use std::convert::TryInto;
 mod dip20;
 mod ledger;
 mod token_proxy;
+use ledger::_is_auth;
 
 const ONE_HOUR: u64 = 3_600_000_000_000;
 const ONE_MINUTE: u64 = 60_000_000_000;
 const BASE_REWARD: u64 = 100;
 
 // Discord emojis
-const FIRE_EMOJI: &str = "<a:Fire:940749752549650432>";
+const FIRE_EMOJI: &str = "<a:fire_anim:992513469041623080>";
 const AYY_EMOJI: &str = "<:ayy:305818615712579584>";
+const RICH_PEPE: &str = "<a:rich_pepe:992836844985258034>";
+const RICH_RAIN_PEPE: &str = "<a:rich_rain_pepe:992836844125438022>";
+const FLAMES_PEPE: &str = "<a:flames_pepe:992836841445277707>";
+const NARUTO_PEPE: &str = "<a:naruto_pepe:992836840761593897>";
+
+const EMOJI: [&'static str; 6] = [
+    FIRE_EMOJI,
+    AYY_EMOJI,
+    RICH_PEPE,
+    RICH_RAIN_PEPE,
+    FLAMES_PEPE,
+    NARUTO_PEPE,
+];
 
 // #[update]
 // #[candid_method]
@@ -68,6 +82,20 @@ fn get_user(discord_id: String) -> Option<ledger::User> {
 #[candid_method]
 fn get_users() -> Vec<ledger::User> {
     ledger::with(|ledger| ledger.users.values().cloned().collect())
+}
+
+#[update(guard = "_is_auth")]
+#[candid_method]
+fn reset_daily_work_time(discord_id: String) -> Result<String, String> {
+    ledger::with_mut(|data| {
+        let mut user = data.users.get_mut(&discord_id).ok_or("asdf")?;
+
+        user.daily.last_timestamp = 0;
+        user.work.last_timestamp = 0;
+        let r = format!("reset {} work and daily time stamps", discord_id);
+
+        Ok(r)
+    })
 }
 
 // END QUERY METHODS //
@@ -140,10 +168,10 @@ async fn daily(discord_user: String) -> Result<String, String> {
                 if bonus > 0 {
                     format!(
                         ", plus `{} EMP` streak bonus for {} days {}",
-                        bonus, streak, FIRE_EMOJI
+                        bonus, streak, RICH_RAIN_PEPE
                     )
                 } else {
-                    format!(" {}", AYY_EMOJI)
+                    format!(" {}", FIRE_EMOJI)
                 },
             ))
         }
@@ -182,22 +210,31 @@ async fn work(discord_user: String) -> Result<String, String> {
         }
         // user gets exponentially increasing amounts the longer the streak
         // TODO: Define a more gradual increase, and taper off at a price
-        let amount = 100 + user.work.streak.pow(2);
-        user.total_rewards += amount;
+        let bonus = user.work.streak.pow(2);
+        user.total_rewards += BASE_REWARD + bonus;
         user.work.streak += 1;
         user.work.last_timestamp = now;
 
-        Ok((user.principal, Nat::from(amount)))
+        Ok((user.principal, bonus))
     });
 
     match res {
-        Ok((principal, amount)) => {
-            dip20::mint(principal, amount.clone())
+        Ok((principal, bonus)) => {
+            dip20::mint(principal, Nat::from(BASE_REWARD + bonus))
                 .await
                 .map_err(|e| format!("{:?}", e))?;
             Ok(format!(
-                "<@{}>, is working! Rewards: `{} EMP`",
-                discord_user, amount
+                "<@{}>, claimed `{} EMP` work rewards{}",
+                discord_user,
+                BASE_REWARD,
+                if bonus > 0 {
+                    format!(
+                        ", plus `{} EMP` for being on the grind! {} ",
+                        bonus, RICH_PEPE
+                    )
+                } else {
+                    format!(" {}", FIRE_EMOJI)
+                },
             ))
         }
         Err(e) => Err(e),
