@@ -90,8 +90,8 @@ fn reset_daily_work_time(discord_id: String) -> Result<String, String> {
     ledger::with_mut(|data| {
         let mut user = data.users.get_mut(&discord_id).ok_or("asdf")?;
 
-        user.daily.last_timestamp = 0;
-        user.work.last_timestamp = 0;
+        user.daily.last_timestamp -= 24 * ONE_HOUR;
+        user.work.last_timestamp -= ONE_HOUR;
         let r = format!("reset {} work and daily time stamps", discord_id);
 
         Ok(r)
