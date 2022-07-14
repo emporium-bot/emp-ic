@@ -440,7 +440,7 @@ pub fn get_user_approvals(who: Principal) -> Vec<(Principal, Nat)> {
 #[update(guard = "_is_auth")]
 #[candid_method(update, rename = "mint")]
 pub async fn mint(to: Principal, amount: Nat) -> TxReceipt {
-    let caller = ic::caller();
+    // let caller = ic::caller();
     let to_balance = balance_of(to);
 
     BALANCES.with(|b| {
@@ -452,7 +452,16 @@ pub async fn mint(to: Principal, amount: Nat) -> TxReceipt {
         stats.total_supply += amount.clone();
     });
     _history_inc();
-    add_record(caller, "mint", caller, to, amount, Nat::from(0), ic::time()).await
+    add_record(
+        Principal::anonymous(),
+        "mint",
+        ic_cdk::id(),
+        Principal::anonymous(),
+        amount,
+        Nat::from(0),
+        ic::time(),
+    )
+    .await
 }
 
 #[update(name = "setName", guard = "_is_auth")]

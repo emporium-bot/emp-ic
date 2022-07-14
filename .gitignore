@@ -3,3 +3,6 @@
 
 # dfx
 **/.dfx/
+
+# vscode
+.vscode/

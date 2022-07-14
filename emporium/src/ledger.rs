@@ -22,7 +22,15 @@ impl StreakData {
 }
 
 #[derive(Clone, Deserialize, CandidType)]
+pub struct AuthToken {
+    pub token: String,
+    pub refresh: String,
+    pub expirey: u64,
+}
+
+#[derive(Clone, Deserialize, CandidType)]
 pub struct User {
+    pub auth: Option<AuthToken>,
     pub discord_id: String,
     pub principal: Principal,
     pub daily: StreakData,
@@ -31,8 +39,9 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(discord_id: String, principal: Principal) -> Self {
+    pub fn new(discord_id: String, principal: Principal, auth: Option<AuthToken>) -> Self {
         Self {
+            auth,
             discord_id,
             principal,
             daily: StreakData::new(),
@@ -47,12 +56,14 @@ pub struct Ledger {
     pub total_users: u64,
     pub nft_canister: Option<Principal>,
     pub users: HashMap<String, User>,
+    pub principals: HashMap<Principal, String>,
 }
 
 thread_local! {
   static LEDGER: RefCell<Ledger> = RefCell::new(Ledger::new(
     0,
     None,
+    HashMap::new(),
     HashMap::new(),
   ));
   static CUSTODIANS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());

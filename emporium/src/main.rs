@@ -8,6 +8,7 @@ use ic_kit::{
     ic,
     macros::*,
 };
+use ledger::_is_auth;
 use regex::Regex;
 use std::convert::TryInto;
 
@@ -15,7 +16,6 @@ use std::convert::TryInto;
 mod dip20;
 mod ledger;
 mod token_proxy;
-use ledger::_is_auth;
 
 const ONE_HOUR: u64 = 3_600_000_000_000;
 const ONE_MINUTE: u64 = 60_000_000_000;
@@ -23,20 +23,18 @@ const BASE_REWARD: u64 = 100;
 
 // Discord emojis
 const FIRE_EMOJI: &str = "<a:fire_anim:992513469041623080>";
-const AYY_EMOJI: &str = "<:ayy:305818615712579584>";
 const RICH_PEPE: &str = "<a:rich_pepe:992836844985258034>";
 const RICH_RAIN_PEPE: &str = "<a:rich_rain_pepe:992836844125438022>";
-const FLAMES_PEPE: &str = "<a:flames_pepe:992836841445277707>";
-const NARUTO_PEPE: &str = "<a:naruto_pepe:992836840761593897>";
+// const FLAMES_PEPE: &str = "<a:flames_pepe:992836841445277707>";
+// const NARUTO_PEPE: &str = "<a:naruto_pepe:992836840761593897>";
 
-const EMOJI: [&'static str; 6] = [
-    FIRE_EMOJI,
-    AYY_EMOJI,
-    RICH_PEPE,
-    RICH_RAIN_PEPE,
-    FLAMES_PEPE,
-    NARUTO_PEPE,
-];
+// const EMOJI: [&'static str; 5] = [
+//     FIRE_EMOJI,
+//     RICH_PEPE,
+//     RICH_RAIN_PEPE,
+//     FLAMES_PEPE,
+//     NARUTO_PEPE,
+// ];
 
 // #[update]
 // #[candid_method]
@@ -58,8 +56,9 @@ struct BalanceResponse {
     work_streak: Nat,
 }
 
+/// Get the balance of a user. Contains no sensitive information.
 #[query]
-#[candid_method]
+#[candid_method(query)]
 fn user_balance(discord_id: String) -> Result<BalanceResponse, String> {
     let user: ledger::User =
         ledger::with(|ledger| ledger.users.get(&discord_id).cloned()).ok_or("User not found :(")?;
@@ -72,14 +71,44 @@ fn user_balance(discord_id: String) -> Result<BalanceResponse, String> {
     })
 }
 
+/// Get the authenticated user's balance.
+/// Contains sensitive information (discord auth and refresh token)
 #[query]
-#[candid_method]
-fn get_user(discord_id: String) -> Option<ledger::User> {
-    ledger::with(|ledger| ledger.users.get(&discord_id).cloned())
+#[candid_method(query)]
+fn auth_user_data(principal: Principal) -> Result<ledger::User, &'static str> {
+    // check if caller is custodians or principal
+    if ic::caller() != principal || _is_auth().is_err() {
+        return Err("You are not authorized to call this method");
+    }
+
+    ledger::with(|ledger| {
+        let discord_id = ledger
+            .principals
+            .get(&principal)
+            .clone()
+            .ok_or("Principal not registered")?;
+
+        let user = ledger
+            .users
+            .get(&discord_id.clone())
+            .cloned()
+            .ok_or("User not found")?;
+
+        Ok(user)
+    })
 }
 
-#[query]
-#[candid_method]
+#[query(guard = "_is_auth")]
+#[candid_method(query)]
+fn get_user(discord_id: String) -> Option<ledger::User> {
+    ledger::with(|ledger| {
+        let user = ledger.users.get(&discord_id).cloned();
+        user
+    })
+}
+
+#[query(guard = "_is_auth")]
+#[candid_method(query)]
 fn get_users() -> Vec<ledger::User> {
     ledger::with(|ledger| ledger.users.values().cloned().collect())
 }
@@ -244,7 +273,7 @@ async fn work(discord_user: String) -> Result<String, String> {
 /// Register a new user
 #[update]
 #[candid_method]
-fn register(discord_user: String) -> Result<String, String> {
+fn register(discord_user: String, auth: Option<ledger::AuthToken>) -> Result<String, String> {
     // regex check for valid discord username
     let re = Regex::new(r"^\d{17,18}$").unwrap();
     if !re.is_match(&discord_user) {
@@ -254,13 +283,17 @@ fn register(discord_user: String) -> Result<String, String> {
     ledger::with_mut(|data| {
         let caller = ic::caller();
         if data.users.contains_key(&discord_user.clone()) {
-            return Err("User already registered".to_string());
+            return Err("Discord user already registered".to_string());
+        }
+        if data.principals.contains_key(&caller) {
+            return Err("Principal already registered".to_string());
         }
 
         data.users.insert(
             discord_user.clone(),
-            ledger::User::new(discord_user.clone(), caller),
+            ledger::User::new(discord_user.clone(), caller, auth),
         );
+        data.principals.insert(caller, discord_user.clone());
         data.total_users += 1;
 
         Ok(format!(
@@ -270,7 +303,7 @@ fn register(discord_user: String) -> Result<String, String> {
     })
 }
 
-// Modify registered users principal
+/// Modify registered users principal
 #[update]
 #[candid_method]
 fn set_principal(discord_user: String, principal: Principal) -> Result<(), String> {
